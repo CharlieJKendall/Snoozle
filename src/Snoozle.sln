@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.645
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle.TestHarness", "Snoozle.TestHarness\Snoozle.TestHarness.csproj", "{8790A238-7890-4493-B1B5-E630B9B20AA7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle", "Snoozle\Snoozle.csproj", "{CF21C65A-27D0-4063-B424-3AB7B45F86C4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E437DD1-DA1E-4D10-B5D8-1376948BE3A3}
+	EndGlobalSection
+EndGlobal
