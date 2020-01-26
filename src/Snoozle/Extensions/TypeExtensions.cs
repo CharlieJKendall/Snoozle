@@ -6,17 +6,8 @@ namespace Snoozle.Extensions
     {
         public static bool TryUnwrapNullableType(this Type type, out Type unwrappedType)
         {
-            bool wasUnwrapped = true;
-
-            unwrappedType = Nullable.GetUnderlyingType(type);
-
-            if (unwrappedType == null)
-            {
-                wasUnwrapped = false;
-                unwrappedType = type;
-            }
-
-            return wasUnwrapped;
+            unwrappedType = Nullable.GetUnderlyingType(type) ?? type;
+            return unwrappedType != type;
         }
     }
 }

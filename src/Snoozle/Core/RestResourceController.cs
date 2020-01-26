@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Snoozle.Configuration;
+using Snoozle.Enums;
 using Snoozle.Sql;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Snoozle.Core
@@ -20,14 +22,35 @@ namespace Snoozle.Core
         }
 
         [HttpPost]
-        public async Task<ActionResult<T>> Post([FromBody] T resource)
+        public async Task<ActionResult<T>> Post([FromBody] T resourceToCreate)
         {
-            return null;
+            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.POST) != HttpVerb.POST)
+            {
+                return MethodNotAllowed();
+            }
+
+            if (resourceToCreate == null)
+            {
+                return BadRequest();
+            }
+
+            IRestResource resourceCreated = await _sqlExecutor.ExecuteInsertAsync(
+                _runtimeConfiguration.SqlStrings.Insert,
+                _runtimeConfiguration.GetNonPrimaryKeySqlParameters,
+                _runtimeConfiguration.GetSqlMapToResource,
+                resourceToCreate);
+
+            return Ok(resourceCreated);
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<T>>> GetAll()
         {
+            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.GET) != HttpVerb.GET)
+            {
+                return MethodNotAllowed();
+            }
+
             IEnumerable<IRestResource> results = await _sqlExecutor.ExecuteSelectAllAsync(
                 _runtimeConfiguration.SqlStrings.SelectAll,
                 _runtimeConfiguration.GetSqlMapToResource);
@@ -38,6 +61,11 @@ namespace Snoozle.Core
         [HttpGet("{id}")]
         public async Task<ActionResult<T>> GetById(string id)
         {
+            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.GET) != HttpVerb.GET)
+            {
+                return MethodNotAllowed();
+            }
+
             IRestResource result = await _sqlExecutor.ExecuteSelectByIdAsync(
                 _runtimeConfiguration.SqlStrings.SelectById,
                 _runtimeConfiguration.GetSqlMapToResource,
@@ -53,14 +81,42 @@ namespace Snoozle.Core
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<T>> Put(string id, [FromBody] T resource)
+        public async Task<ActionResult<T>> Put(string id, [FromBody] T resourceToUpdate)
         {
-            return null;
+            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.PUT) != HttpVerb.PUT)
+            {
+                return MethodNotAllowed();
+            }
+
+            if (resourceToUpdate == null || _runtimeConfiguration.GetPrimaryKeyValue(resourceToUpdate).ToString() != id)
+            {
+                return BadRequest();
+            }
+
+            IRestResource resourceUpdated = await _sqlExecutor.ExecuteUpdateAsync(
+                _runtimeConfiguration.SqlStrings.UpdateById,
+                _runtimeConfiguration.GetNonPrimaryKeySqlParameters,
+                _runtimeConfiguration.GetPrimaryKeySqlParameter,
+                _runtimeConfiguration.GetSqlMapToResource,
+                resourceToUpdate,
+                id);
+
+            if (resourceUpdated == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(resourceUpdated);
         }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
+            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.DELETE) != HttpVerb.DELETE)
+            {
+                return MethodNotAllowed();
+            }
+
             bool success = await _sqlExecutor.ExecuteDeleteByIdAsync(
                 _runtimeConfiguration.SqlStrings.DeleteById,
                 _runtimeConfiguration.GetPrimaryKeySqlParameter,
@@ -74,6 +130,11 @@ namespace Snoozle.Core
             {
                 return NotFound();
             }
+        }
+
+        private ActionResult MethodNotAllowed()
+        {
+            return StatusCode((int)HttpStatusCode.MethodNotAllowed);
         }
     }
 }

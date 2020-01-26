@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Snoozle.Configuration;
 using Snoozle.Core;
+using Snoozle.Sql;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,13 @@ namespace Snoozle.Extensions
     {
         public static IMvcBuilder AddSnoozle(this IMvcBuilder @this)
         {
+            IServiceCollection serviceCollection = @this.Services;
+
+            serviceCollection.AddScoped<ISqlExecutor, SqlExecutor>();
+
+            IRuntimeConfigurationProvider runtimeConfig = RuntimeConfigurationProvider.CreateInstance();
+            serviceCollection.AddSingleton<IRuntimeConfigurationProvider>(runtimeConfig);
+
             // Get all rest resources defined in application domain
             IEnumerable<TypeInfo> restResources = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.DefinedTypes)
@@ -23,7 +32,7 @@ namespace Snoozle.Extensions
             @this.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new RestResourceControllerApplicationPart(controllerTypeInfos)));
 
             // Add custom controller model convention to ensure controller route matches resource name
-            @this.AddMvcOptions(options => options.Conventions.Add(new RestResourceControllerModelConvention()));
+            @this.AddMvcOptions(options => options.Conventions.Add(new RestResourceControllerModelConvention(runtimeConfig)));            
 
             return @this;
         }

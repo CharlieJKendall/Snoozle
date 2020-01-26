@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Snoozle.Configuration;
 using System;
 using System.Linq;
 
@@ -6,13 +7,21 @@ namespace Snoozle.Core
 {
     internal class RestResourceControllerModelConvention : IControllerModelConvention
     {
+        private readonly IRuntimeConfigurationProvider _runtimeConfigurationProvider;
+
+        public RestResourceControllerModelConvention(IRuntimeConfigurationProvider runtimeConfigurationProvider)
+        {
+            _runtimeConfigurationProvider = runtimeConfigurationProvider;
+        }
+
         public void Apply(ControllerModel controller)
         {
-            string resourceName = controller.ControllerType.GetGenericArguments().SingleOrDefault(arg => arg.GetInterfaces().Contains(typeof(IRestResource)))?.Name;
+            var resourceType = controller.ControllerType.GetGenericArguments().SingleOrDefault(arg => arg.GetInterfaces().Contains(typeof(IRestResource)));
 
-            if (!string.IsNullOrEmpty(resourceName))
-            {                
-                controller.ControllerName = resourceName;
+            if (resourceType != null)
+            {
+                var config = _runtimeConfigurationProvider.GetRuntimeConfigurationForType(resourceType);
+                controller.ControllerName = config.Route;
             }
         }
     }
