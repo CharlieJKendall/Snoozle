@@ -12,30 +12,39 @@ namespace Snoozle.Sql
 {
     public class SqlGenerator : ISqlGenerator
     {
-        public string SelectAll<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource
+        private readonly ISqlParamaterProvider _sqlParamaterProvider;
+
+        public SqlGenerator(ISqlParamaterProvider sqlParamaterProvider)
+        {
+            _sqlParamaterProvider = sqlParamaterProvider;
+        }
+
+        public string SelectAll(IRuntimeResourceConfiguration config)
         {
             return SelectAllBuilder(config).ToString();
         }
 
-        public string DeleteById<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource
+        public string DeleteById(IRuntimeResourceConfiguration config)
         {
-            return $"DELETE FROM [{config.TableName}] WHERE [{config.PrimaryIdentifier.ColumnName}] = {SqlConstants.ID_PARAM_NAME}";
+            return new StringBuilder($"DELETE FROM [{config.TableName}]")
+                .AppendWhereClause(config.PrimaryIdentifier.ColumnName, _sqlParamaterProvider.GetPrimaryKeyParameterName())
+                .ToString();
         }
 
-        private StringBuilder SelectAllBuilder<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource
+        private StringBuilder SelectAllBuilder(IRuntimeResourceConfiguration config)
         {
             StringBuilder stringBuilder = new StringBuilder("SELECT ");
-            PropertyConfig[] map = config.PropertyConfigurationsForRead.ToArray();
+            IResourcePropertyConfiguration[] properties = config.PropertyConfigurationsForRead.ToArray();
 
-            for (int i = 0; i < map.Length; i++)
+            for (int i = 0; i < properties.Length; i++)
             {
                 stringBuilder.Append("[");
-                stringBuilder.Append(map[i].ColumnName);
+                stringBuilder.Append(properties[i].ColumnName);
                 stringBuilder.Append("] AS [");
-                stringBuilder.Append(map[i].PropertyName);
+                stringBuilder.Append(properties[i].PropertyName);
                 stringBuilder.Append("]");
 
-                if (i != map.Length - 1)
+                if (i != properties.Length - 1)
                 {
                     stringBuilder.Append(",");
                 }
@@ -50,48 +59,222 @@ namespace Snoozle.Sql
             return stringBuilder;
         }
 
-        public string SelectById<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource
+        public string SelectById(IRuntimeResourceConfiguration config)
         {
             return SelectByIdBuilder(config).ToString();
         }
 
-        private StringBuilder SelectByIdBuilder<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource
+        public StringBuilder SelectByIdBuilder(IRuntimeResourceConfiguration config)
         {
-            StringBuilder stringBuilder = SelectAllBuilder(config);
-            stringBuilder.Append(" WHERE [");
-            stringBuilder.Append(config.PrimaryIdentifier.ColumnName);
-            stringBuilder.Append("] = ");
-            stringBuilder.Append(SqlConstants.ID_PARAM_NAME);
+            return SelectAllBuilder(config)
+                .AppendWhereClause(config.PrimaryIdentifier.ColumnName, _sqlParamaterProvider.GetPrimaryKeyParameterName());
+        }
 
-            return stringBuilder;
+        public string Insert(IRuntimeResourceConfiguration config)
+        {
+            IResourcePropertyConfiguration[] properties = config.PropertyConfigurationsForWrite.ToArray();
+            StringBuilder stringBuilder = new StringBuilder("INSERT INTO [");
+            stringBuilder.Append(config.TableName);
+            stringBuilder.Append("] (");
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                stringBuilder.Append("[");
+                stringBuilder.Append(properties[i].ColumnName);
+                stringBuilder.Append("]");
+
+                if (i != properties.Length - 1)
+                {
+                    stringBuilder.Append(", ");
+                }
+            }
+
+            stringBuilder.Append(") VALUES (");
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                stringBuilder.Append(_sqlParamaterProvider.GenerateParameterName(properties[i].PropertyName));
+
+                if (i != properties.Length - 1)
+                {
+                    stringBuilder.Append(", ");
+                }
+            }
+
+            stringBuilder.Append(") ");
+
+            stringBuilder.Append(
+                SelectAllBuilder(config)
+                .AppendWhereClause(config.PrimaryIdentifier.ColumnName, "SCOPE_IDENTITY()"));
+
+            return stringBuilder.ToString();
+        }
+
+        public string Update(IRuntimeResourceConfiguration config)
+        {
+            IResourcePropertyConfiguration[] properties = config.PropertyConfigurationsForWrite.ToArray();
+            StringBuilder stringBuilder = new StringBuilder("UPDATE [");
+            stringBuilder.Append(config.TableName);
+            stringBuilder.Append("] SET ");
+
+            for (int i = 0; i < properties.Length; i++)
+            {
+                stringBuilder.Append("[");
+                stringBuilder.Append(properties[i].ColumnName);
+                stringBuilder.Append("] = ");
+                stringBuilder.Append(_sqlParamaterProvider.GenerateParameterName(properties[i].PropertyName));
+
+                if (i != properties.Length - 1)
+                {
+                    stringBuilder.Append(",");
+                }
+
+                stringBuilder.Append(" ");
+            }
+
+            return stringBuilder
+                .AppendWhereClause(config.PrimaryIdentifier.ColumnName, _sqlParamaterProvider.GetPrimaryKeyParameterName())
+                .Append(SelectByIdBuilder(config)).ToString();
+        }
+    }
+
+    public static class StringBuilderExtensions
+    {
+        public static StringBuilder AppendWhereClause(this StringBuilder @this, string columnName, string parameterName)
+        {
+            @this.Append(" WHERE [");
+            @this.Append(columnName);
+            @this.Append("] = ");
+            @this.Append(parameterName);
+            @this.Append(" ");
+
+            return @this;
+        }
+    }
+
+    public interface ISqlParamaterProvider
+    {
+        string GenerateParameterName(string propertyName);
+        string GetPrimaryKeyParameterName();
+    }
+
+    public class SqlParameterProvider : ISqlParamaterProvider
+    {
+        private const string ID_PARAM_NAME = "PrimaryKeyIdParam";
+
+        public string GenerateParameterName(string propertyName)
+        {
+            if (propertyName == ID_PARAM_NAME)
+            {
+                throw new ArgumentException($"Property cannot be called '{ID_PARAM_NAME}'; this is reserved for internal usage.", nameof(propertyName));
+            }
+
+            return $"@{propertyName}";
+        }
+
+        public string GetPrimaryKeyParameterName()
+        {
+            return $"@{ID_PARAM_NAME}";
         }
     }
 
     public interface ISqlGenerator
     {
-        string SelectAll<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource;
-        string SelectById<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource;
-        string DeleteById<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource;
+        string SelectAll(IRuntimeResourceConfiguration config);
+
+        string SelectById(IRuntimeResourceConfiguration config);
+
+        string DeleteById(IRuntimeResourceConfiguration config);
+
+        string Insert(IRuntimeResourceConfiguration config);
+
+        string Update(IRuntimeResourceConfiguration config);
     }
 
     public class SqlExpressionBuilder : ISqlExpressionBuilder
     {
-        public Expression<Func<object, SqlParameter>> GetPrimaryKeySqlParameter(PropertyConfig primaryIdentifierConfig)
+        private readonly ISqlParamaterProvider _sqlParamaterProvider;
+
+        public SqlExpressionBuilder(ISqlParamaterProvider sqlParamaterProvider)
         {
-            return (primaryKey) =>
-                new SqlParameter(SqlConstants.ID_PARAM_NAME, primaryKey)
-                {
-                    SqlDbType = primaryIdentifierConfig.SqlDbType
-                };            
+            _sqlParamaterProvider = sqlParamaterProvider;
         }
 
-        public Func<SqlDataReader, T> CreateObjectRelationalMapFunc<T>(IRuntimeResourceConfiguration<T> config)
+        public Func<object, object> GetPrimaryKeyValue<T>(IRuntimeResourceConfiguration config)
             where T : class, IRestResource
         {
-            return CreateObjectRelationalMap(config).Compile();
+            var paramResource = Expression.Parameter(typeof(object), "resource");
+            var property = Expression.Convert(
+                Expression.Property(Expression.Convert(paramResource, typeof(T)), config.PrimaryIdentifier.PropertyName),
+                typeof(object));
+
+            var lambda = Expression.Lambda<Func<object, object>>(
+                property,
+                paramResource);
+            
+            return lambda.Compile();
         }
 
-        public Expression<Func<SqlDataReader, T>> CreateObjectRelationalMap<T>(IRuntimeResourceConfiguration<T> config)
+        public Func<object, SqlParameter> GetPrimaryKeySqlParameter(IResourcePropertyConfiguration primaryIdentifierConfig)
+        {
+            return GetSqlParameter(primaryIdentifierConfig, _sqlParamaterProvider.GetPrimaryKeyParameterName()).Compile();
+        }
+
+        public Func<object, List<SqlParameter>> GetNonPrimaryKeySqlParameters<T>(IRuntimeResourceConfiguration config)
+            where T : class, IRestResource
+        {
+            var configs = config.PropertyConfigurationsForWrite.ToArray();
+
+            var paramResource = Expression.Parameter(typeof(object), "resourceObject");
+            var typedParam = Expression.Convert(paramResource, typeof(T));
+            var result = Expression.Variable(typeof(List<SqlParameter>), "sqlParameters");
+            var typedParamVar = Expression.Variable(typeof(T), "typedParam");
+            var assignTypedParamVar = Expression.Assign(typedParamVar, typedParam);
+            var instantiateResultObj = Expression.Assign(result, Expression.New(typeof(List<SqlParameter>)));
+
+            List<Expression> expressions = new List<Expression>
+            {
+                assignTypedParamVar,
+                instantiateResultObj
+            };
+
+            for (int i = 0; i < configs.Length; i++)
+            {
+                MemberExpression property = Expression.Property(typedParamVar, configs[i].PropertyName);
+                Expression<Func<object, SqlParameter>> sqlParam = GetSqlParameter(configs[i], _sqlParamaterProvider.GenerateParameterName(configs[i].PropertyName));
+                InvocationExpression getSqlParam = Expression.Invoke(sqlParam, Expression.Convert(property, typeof(object)));
+                MethodCallExpression generateNameAndAddToList = Expression.Call(
+                    result,
+                    nameof(List<SqlParameter>.Add),
+                    null,
+                    getSqlParam);
+
+                expressions.Add(generateNameAndAddToList);
+            }
+
+            // Return the result from the expression
+            expressions.Add(result);
+
+            var lambda = Expression.Lambda<Func<object, List<SqlParameter>>>(
+                Expression.Block(
+                    new[] { result, typedParamVar },
+                    expressions),
+                paramResource);
+            
+            return lambda.Compile();
+        }
+
+        private Expression<Func<object, SqlParameter>> GetSqlParameter(IResourcePropertyConfiguration config, string paramName)
+        {
+            return (value) =>
+                new SqlParameter(paramName, value ?? DBNull.Value)
+                {
+                    SqlDbType = config.SqlDbType.Value,
+                    IsNullable = true
+                };
+        }
+
+        public Func<SqlDataReader, T> CreateObjectRelationalMap<T>(IRuntimeResourceConfiguration config)
             where T : class, IRestResource
         {
             var orderedConfigs = config.PropertyConfigurationsForRead.OrderBy(prop => prop.Index).ToArray();
@@ -102,7 +285,6 @@ namespace Snoozle.Sql
 
             List<Expression> expressions = new List<Expression>
             {
-                paramDataReader,
                 instantiateResultObj
             };
 
@@ -125,14 +307,16 @@ namespace Snoozle.Sql
             // Return the result from the expression
             expressions.Add(result);
 
-            return Expression.Lambda<Func<SqlDataReader, T>>(
+            var lambda = Expression.Lambda<Func<SqlDataReader, T>>(
                 Expression.Block(
                     new[] { result },
                     expressions),
                 paramDataReader);
+            
+            return lambda.Compile();
         }
 
-        public Expression GetMethodCallForType(Expression dataReaderInstance, Expression dataIndex, MemberExpression property)
+        private Expression GetMethodCallForType(Expression dataReaderInstance, Expression dataIndex, MemberExpression property)
         {
             bool wasUnwrapped = property.Type.TryUnwrapNullableType(out Type unwrappedTypeOrOriginal);
 
@@ -170,8 +354,15 @@ namespace Snoozle.Sql
 
     public interface ISqlExpressionBuilder
     {
-        Expression<Func<object, SqlParameter>> GetPrimaryKeySqlParameter(PropertyConfig primaryIdentifierConfig);
-        Expression<Func<SqlDataReader, T>> CreateObjectRelationalMap<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource;
-        Func<SqlDataReader, T> CreateObjectRelationalMapFunc<T>(IRuntimeResourceConfiguration<T> config) where T : class, IRestResource;
+        Func<object, SqlParameter> GetPrimaryKeySqlParameter(IResourcePropertyConfiguration primaryIdentifierConfig);
+
+        Func<SqlDataReader, T> CreateObjectRelationalMap<T>(IRuntimeResourceConfiguration config)
+            where T : class, IRestResource;
+
+        Func<object, List<SqlParameter>> GetNonPrimaryKeySqlParameters<T>(IRuntimeResourceConfiguration config)
+            where T : class, IRestResource;
+
+        Func<object, object> GetPrimaryKeyValue<T>(IRuntimeResourceConfiguration config)
+            where T : class, IRestResource;
     }
 }
