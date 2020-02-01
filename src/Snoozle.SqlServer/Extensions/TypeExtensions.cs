@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Snoozle.Extensions
+namespace Snoozle.SqlServer.Extensions
 {
     public static class TypeExtensions
     {

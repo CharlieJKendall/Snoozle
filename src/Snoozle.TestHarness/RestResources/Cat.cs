@@ -1,6 +1,7 @@
-﻿using Snoozle.Core;
-using Snoozle.Enums;
-using Snoozle.RestResourceConfiguration;
+﻿using Snoozle.Abstractions;
+using Snoozle.Extensions;
+using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Extensions;
 using System;
 
 namespace Snoozle.TestHarness.RestResources
@@ -18,18 +19,17 @@ namespace Snoozle.TestHarness.RestResources
         public long? UnconfiguredProperty { get; set; }
     }
 
-    public class CatResourceConfiguration : AbstractResourceConfigurationBuilder<Cat>
+    public class CatResourceConfiguration : SqlResourceConfigurationBuilder<Cat>
     {
         public override void Configure()
         {
-            ConfigurationForResource().HasTableName("Cats").HasAllowedHttpVerbs(HttpVerb.GET | HttpVerb.POST | HttpVerb.PUT).HasRoute("cattyboys");
+            ConfigurationForModel().HasTableName("Cats").HasAllowedHttpVerbs(HttpVerb.All).HasRoute("cattyboys");
 
             ConfigurationForProperty(x => x.HairLength).HasColumnName("HairLengthInMeters");
             ConfigurationForProperty(x => x.Id).HasColumnName("CatId").IsPrimaryIdentifier();
-            ConfigurationForProperty(x => x.DateCreated).HasComputedColumnValue().DateTimeNow();
+            ConfigurationForProperty(x => x.DateCreated).HasComputedValue().DateTimeNow();
             ConfigurationForProperty(x => x.Name).HasColumnName("WrongColumnName");
-            ConfigurationForProperty(x => x.Name).HasColumnName("CatName").HasComputedColumnValue().Custom(() => "HELLO");
-            ConfigurationForProperty(x => DateTime.Now);
+            ConfigurationForProperty(x => x.Name).HasColumnName("CatName").HasComputedValue().Custom(() => "HELLO");
         }
     }
 }

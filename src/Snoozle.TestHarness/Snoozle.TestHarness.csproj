@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Snoozle.SqlServer\Snoozle.SqlServer.csproj" />
     <ProjectReference Include="..\Snoozle\Snoozle.csproj" />
   </ItemGroup>
 
