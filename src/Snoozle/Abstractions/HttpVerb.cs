@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Snoozle.Enums
+namespace Snoozle.Abstractions
 {
     [Flags]
     public enum HttpVerb

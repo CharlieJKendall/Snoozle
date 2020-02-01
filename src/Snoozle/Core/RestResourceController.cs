@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Snoozle.Configuration;
-using Snoozle.Enums;
-using Snoozle.Sql;
+using Snoozle.Abstractions;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,12 +10,12 @@ namespace Snoozle.Core
     public sealed class RestResourceController<T> : ControllerBase
         where T : class, IRestResource
     {
-        private readonly ISqlExecutor _sqlExecutor;
+        private readonly IDataProvider _dataProvider;
         private readonly IRuntimeConfiguration _runtimeConfiguration;
 
-        public RestResourceController(ISqlExecutor sqlExecutor, IRuntimeConfigurationProvider runtimeConfigurationProvider)
+        public RestResourceController(IDataProvider dataProvider, IRuntimeConfigurationProvider<IRuntimeConfiguration> runtimeConfigurationProvider)
         {
-            _sqlExecutor = sqlExecutor;
+            _dataProvider = dataProvider;
             _runtimeConfiguration = runtimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(T));
         }
 
@@ -34,11 +32,7 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            IRestResource resourceCreated = await _sqlExecutor.ExecuteInsertAsync(
-                _runtimeConfiguration.SqlStrings.Insert,
-                _runtimeConfiguration.GetNonPrimaryKeySqlParameters,
-                _runtimeConfiguration.GetSqlMapToResource,
-                resourceToCreate);
+            IRestResource resourceCreated = await _dataProvider.ExecuteInsertAsync(resourceToCreate);
 
             return Ok(resourceCreated);
         }
@@ -51,9 +45,7 @@ namespace Snoozle.Core
                 return MethodNotAllowed();
             }
 
-            IEnumerable<IRestResource> results = await _sqlExecutor.ExecuteSelectAllAsync(
-                _runtimeConfiguration.SqlStrings.SelectAll,
-                _runtimeConfiguration.GetSqlMapToResource);
+            IEnumerable<IRestResource> results = await _dataProvider.ExecuteSelectAllAsync<T>();
 
             return Ok(results);
         }
@@ -66,11 +58,7 @@ namespace Snoozle.Core
                 return MethodNotAllowed();
             }
 
-            IRestResource result = await _sqlExecutor.ExecuteSelectByIdAsync(
-                _runtimeConfiguration.SqlStrings.SelectById,
-                _runtimeConfiguration.GetSqlMapToResource,
-                _runtimeConfiguration.GetPrimaryKeySqlParameter,
-                id);
+            IRestResource result = await _dataProvider.ExecuteSelectByIdAsync<T>(id);
 
             if (result == null)
             {
@@ -93,13 +81,7 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            IRestResource resourceUpdated = await _sqlExecutor.ExecuteUpdateAsync(
-                _runtimeConfiguration.SqlStrings.UpdateById,
-                _runtimeConfiguration.GetNonPrimaryKeySqlParameters,
-                _runtimeConfiguration.GetPrimaryKeySqlParameter,
-                _runtimeConfiguration.GetSqlMapToResource,
-                resourceToUpdate,
-                id);
+            IRestResource resourceUpdated = await _dataProvider.ExecuteUpdateAsync(resourceToUpdate, id);
 
             if (resourceUpdated == null)
             {
@@ -117,10 +99,7 @@ namespace Snoozle.Core
                 return MethodNotAllowed();
             }
 
-            bool success = await _sqlExecutor.ExecuteDeleteByIdAsync(
-                _runtimeConfiguration.SqlStrings.DeleteById,
-                _runtimeConfiguration.GetPrimaryKeySqlParameter,
-                id);
+            bool success = await _dataProvider.ExecuteDeleteByIdAsync<T>(id);
 
             if (success)
             {

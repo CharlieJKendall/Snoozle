@@ -1,5 +1,5 @@
-﻿using Snoozle.Core;
-using Snoozle.RestResourceConfiguration;
+﻿using Snoozle.Abstractions;
+using Snoozle.SqlServer.Configuration;
 
 namespace Snoozle.TestHarness.RestResources
 {
@@ -8,11 +8,10 @@ namespace Snoozle.TestHarness.RestResources
         public int Id { get; set; }
     }
 
-    public class PersonResourceConfiguration : AbstractResourceConfigurationBuilder<Person>
+    public class PersonResourceConfiguration : SqlResourceConfigurationBuilder<Person>
     {
         public override void Configure()
         {
-
         }
     }
 }
