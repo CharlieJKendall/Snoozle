@@ -20,7 +20,7 @@ namespace Snoozle.SqlServer.Implementation
             _logger = logger;
         }
 
-        public async Task<bool> ExecuteDeleteByIdAsync<TResource>(object primaryKey)
+        public async Task<bool> DeleteByIdAsync<TResource>(object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
@@ -31,7 +31,7 @@ namespace Snoozle.SqlServer.Implementation
                 primaryKey);
         }
 
-        public async Task<TResource> ExecuteInsertAsync<TResource>(TResource resourceToCreate)
+        public async Task<TResource> InsertAsync<TResource>(TResource resourceToCreate)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
@@ -43,7 +43,7 @@ namespace Snoozle.SqlServer.Implementation
                 resourceToCreate);
         }
 
-        public async Task<IEnumerable<TResource>> ExecuteSelectAllAsync<TResource>()
+        public async Task<IEnumerable<TResource>> SelectAllAsync<TResource>()
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
@@ -51,7 +51,7 @@ namespace Snoozle.SqlServer.Implementation
             return await _sqlExecutor.ExecuteSelectAllAsync(config.SelectAll, config.GetSqlMapToResource);
         }
 
-        public async Task<TResource> ExecuteSelectByIdAsync<TResource>(object primaryKey)
+        public async Task<TResource> SelectByIdAsync<TResource>(object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
@@ -72,7 +72,7 @@ namespace Snoozle.SqlServer.Implementation
             }
         }
 
-        public async Task<TResource> ExecuteUpdateAsync<TResource>(TResource resourceToCreate, object primaryKey)
+        public async Task<TResource> UpdateAsync<TResource>(TResource resourceToCreate, object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();

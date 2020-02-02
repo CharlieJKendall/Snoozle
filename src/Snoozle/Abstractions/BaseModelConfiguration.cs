@@ -1,6 +1,4 @@
-﻿using Snoozle.Enums;
-
-namespace Snoozle.Abstractions
+﻿namespace Snoozle.Abstractions
 {
     public abstract class BaseModelConfiguration<TResource> : IModelConfiguration
         where TResource : class, IRestResource

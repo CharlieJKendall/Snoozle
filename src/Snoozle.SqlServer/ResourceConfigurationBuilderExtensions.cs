@@ -1,9 +1,10 @@
 ﻿using Snoozle.Abstractions;
+using Snoozle.Exceptions;
 using Snoozle.SqlServer.Implementation;
 using System.Data;
 using System.Text.RegularExpressions;
 
-namespace Snoozle.SqlServer.Extensions
+namespace Snoozle.SqlServer
 {
     public static class ModelConfigurationBuilderExtensions
     {

@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 
 namespace Snoozle.SqlServer.Implementation
 {
-    public class SqlRuntimeConfiguration<TResource> : BaseRuntimeConfiguration<ISqlPropertyConfiguration, ISqlModelConfiguration>, ISqlRuntimeConfiguration<TResource>
+    public class SqlRuntimeConfiguration<TResource> : BaseRuntimeConfiguration<ISqlPropertyConfiguration, ISqlModelConfiguration, TResource>, ISqlRuntimeConfiguration<TResource>
         where TResource : class, IRestResource
     {
         // This is created by reflection, so be careful when changing/adding parameters

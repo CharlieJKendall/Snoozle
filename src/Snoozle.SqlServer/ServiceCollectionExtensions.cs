@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Snoozle.Abstractions;
-using Snoozle.Extensions;
 using Snoozle.SqlServer.Configuration;
 using Snoozle.SqlServer.Implementation;
 using Snoozle.SqlServer.Internal;
@@ -9,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
-namespace Snoozle.SqlServer.Extensions
+namespace Snoozle.SqlServer
 {
     public static class ServiceCollectionExtensions
     {

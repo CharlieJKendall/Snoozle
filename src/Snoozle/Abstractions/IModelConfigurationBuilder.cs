@@ -1,6 +1,4 @@
-﻿using Snoozle.Enums;
-
-namespace Snoozle.Abstractions
+﻿namespace Snoozle.Abstractions
 {
     public interface IModelConfigurationBuilder<TModelConfiguration>
         where TModelConfiguration : class, IModelConfiguration

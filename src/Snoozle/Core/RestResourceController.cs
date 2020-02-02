@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Snoozle.Abstractions;
+using Snoozle.Abstractions.Models;
 using Snoozle.Configuration;
-using Snoozle.Enums;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,28 +12,28 @@ using System.Threading.Tasks;
 namespace Snoozle.Core
 {
     [Route("api/[controller]")]
-    public sealed class RestResourceController<T> : ControllerBase
-        where T : class, IRestResource
+    public sealed class RestResourceController<TResource> : ControllerBase
+        where TResource : class, IRestResource
     {
         private readonly IDataProvider _dataProvider;
         private readonly IRuntimeConfiguration _runtimeConfiguration;
-        private readonly ILogger<RestResourceController<T>> _logger;
+        private readonly ILogger<RestResourceController<TResource>> _logger;
         private readonly SnoozleOptions _options;
 
         public RestResourceController(
             IDataProvider dataProvider,
             IRuntimeConfigurationProvider<IRuntimeConfiguration> runtimeConfigurationProvider,
-            ILogger<RestResourceController<T>> logger,
+            ILogger<RestResourceController<TResource>> logger,
             IOptions<SnoozleOptions> options)
         {
             _dataProvider = dataProvider;
-            _runtimeConfiguration = runtimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(T));
+            _runtimeConfiguration = runtimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(TResource));
             _logger = logger;
             _options = options.Value;
         }
 
         [HttpPost]
-        public async Task<ActionResult<T>> Post([FromBody] T resourceToCreate)
+        public async Task<ActionResult<TResource>> Post([FromBody] TResource resourceToCreate)
         {
             if (MethodIsDisallowed(HttpVerb.POST))
             {
@@ -44,44 +45,70 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            IRestResource resourceCreated = await _dataProvider.ExecuteInsertAsync(resourceToCreate);
+            ApplyComputedValues(resourceToCreate, HttpVerb.POST);
 
-            return Ok(resourceCreated);
+            try
+            {
+                TResource resourceCreated = await _dataProvider.InsertAsync(resourceToCreate);
+
+                return Ok(resourceCreated);
+            }
+            catch (NotSupportedException)
+            {
+                // Data providers that do not support certain HTTP methods throw NotSupportedException
+                return MethodNotAllowed();
+            }
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<T>>> GetAll()
+        public async Task<ActionResult<IEnumerable<TResource>>> GetAll()
         {
             if (MethodIsDisallowed(HttpVerb.GET))
             {
                 return MethodNotAllowed();
             }
 
-            IEnumerable<IRestResource> results = await _dataProvider.ExecuteSelectAllAsync<T>();
+            try
+            {
+                IEnumerable<TResource> results = await _dataProvider.SelectAllAsync<TResource>();
 
-            return Ok(results);
+                return Ok(results);
+            }
+            catch (NotSupportedException)
+            {
+                // Data providers that do not support certain HTTP methods throw NotSupportedException
+                return MethodNotAllowed();
+            }
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<T>> GetById(string id)
+        public async Task<ActionResult<TResource>> GetById(string id)
         {
             if (MethodIsDisallowed(HttpVerb.GET))
             {
                 return MethodNotAllowed();
             }
 
-            IRestResource result = await _dataProvider.ExecuteSelectByIdAsync<T>(id);
-
-            if (result == null)
+            try
             {
-                return NotFound();
-            }
+                TResource result = await _dataProvider.SelectByIdAsync<TResource>(id);
 
-            return Ok(result);
+                if (result == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(result);
+            }
+            catch (NotSupportedException)
+            {
+                // Data providers that do not support certain HTTP methods throw NotSupportedException
+                return MethodNotAllowed();
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<T>> Put(string id, [FromBody] T resourceToUpdate)
+        public async Task<ActionResult<TResource>> Put(string id, [FromBody] TResource resourceToUpdate)
         {
             if (MethodIsDisallowed(HttpVerb.PUT))
             {
@@ -93,14 +120,24 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            IRestResource resourceUpdated = await _dataProvider.ExecuteUpdateAsync(resourceToUpdate, id);
+            ApplyComputedValues(resourceToUpdate, HttpVerb.PUT);
 
-            if (resourceUpdated == null)
+            try
             {
-                return NotFound();
-            }
+                TResource resourceUpdated = await _dataProvider.UpdateAsync(resourceToUpdate, id);
 
-            return Ok(resourceUpdated);
+                if (resourceUpdated == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(resourceUpdated);
+            }
+            catch (NotSupportedException)
+            {
+                // Data providers that do not support certain HTTP methods throw NotSupportedException
+                return MethodNotAllowed();
+            }
         }
 
         [HttpDelete("{id}")]
@@ -111,15 +148,23 @@ namespace Snoozle.Core
                 return MethodNotAllowed();
             }
 
-            bool success = await _dataProvider.ExecuteDeleteByIdAsync<T>(id);
+            try
+            {
+                bool success = await _dataProvider.DeleteByIdAsync<TResource>(id);
 
-            if (success)
-            {
-                return NoContent();
+                if (success)
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
-            else
+            catch (NotSupportedException)
             {
-                return NotFound();
+                // Data providers that do not support certain HTTP methods throw NotSupportedException
+                return MethodNotAllowed();
             }
         }
 
@@ -136,6 +181,19 @@ namespace Snoozle.Core
             var disallowedOnResource = (_runtimeConfiguration.AllowedVerbsFlags & httpVerb) != httpVerb;
 
             return disallowedGlobally || disallowedOnResource;
+        }
+
+        private void ApplyComputedValues(TResource resource, HttpVerb httpVerb)
+        {
+            foreach (ValueComputationActionModel action in _runtimeConfiguration.ValueComputationActions)
+            {
+                // Only apply the computed value if the user has specified that it is to be applied for the given HTTP verb
+                // i.e. some values are only updated for POST (e.g. DateCreated)
+                if ((action.EndpointTriggers & httpVerb) == httpVerb)
+                {
+                    action.ValueComputationAction(resource);
+                }
+            }
         }
     }
 }

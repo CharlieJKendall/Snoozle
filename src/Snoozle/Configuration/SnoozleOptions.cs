@@ -1,6 +1,4 @@
-﻿using Snoozle.Enums;
-
-namespace Snoozle.Configuration
+﻿namespace Snoozle.Configuration
 {
     public class SnoozleOptions
     {

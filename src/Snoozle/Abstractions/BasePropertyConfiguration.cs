@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Snoozle.Abstractions.Models;
+using System;
 
 namespace Snoozle.Abstractions
 {
@@ -14,6 +15,6 @@ namespace Snoozle.Abstractions
 
         public bool IsPrimaryResourceIdentifier { get; set; } = false;
 
-        public Func<object> ValueComputationFunc { get; set; } = null;
+        public ValueComputationFuncModel ValueComputationFunc { get; set; } = null;
     }
 }

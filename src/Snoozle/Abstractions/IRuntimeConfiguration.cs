@@ -1,5 +1,6 @@
-﻿using Snoozle.Enums;
+﻿using Snoozle.Abstractions.Models;
 using System;
+using System.Collections.Generic;
 
 namespace Snoozle.Abstractions
 {
@@ -10,5 +11,7 @@ namespace Snoozle.Abstractions
         HttpVerb AllowedVerbsFlags { get; }
 
         string Route { get; }
+
+        IEnumerable<ValueComputationActionModel> ValueComputationActions { get; }
     }
 }

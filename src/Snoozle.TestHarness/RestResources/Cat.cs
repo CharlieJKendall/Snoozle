@@ -1,8 +1,4 @@
-﻿using Snoozle.Abstractions;
-using Snoozle.Enums;
-using Snoozle.Extensions;
-using Snoozle.SqlServer.Implementation;
-using Snoozle.SqlServer.Extensions;
+﻿using Snoozle.SqlServer;
 using System;
 
 namespace Snoozle.TestHarness.RestResources
@@ -28,9 +24,9 @@ namespace Snoozle.TestHarness.RestResources
 
             ConfigurationForProperty(x => x.HairLength).HasColumnName("HairLengthInMeters");
             ConfigurationForProperty(x => x.Id).HasColumnName("CatId").IsPrimaryIdentifier();
-            ConfigurationForProperty(x => x.DateCreated).HasComputedValue().DateTimeNow();
+            ConfigurationForProperty(x => x.DateCreated).HasComputedValue().DateTimeNow(HttpVerb.POST);
             ConfigurationForProperty(x => x.Name).HasColumnName("WrongColumnName");
-            ConfigurationForProperty(x => x.Name).HasColumnName("CatName").HasComputedValue().Custom(() => "HELLO");
+            ConfigurationForProperty(x => x.Name).HasColumnName("CatName").HasComputedValue().Custom(() => "GARY");
         }
     }
 
@@ -38,5 +34,4 @@ namespace Snoozle.TestHarness.RestResources
     {
         HEY = 1
     }
-
 }
