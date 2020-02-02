@@ -1,5 +1,5 @@
 ﻿using Snoozle.Abstractions;
-using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Implementation;
 
 namespace Snoozle.TestHarness.RestResources
 {

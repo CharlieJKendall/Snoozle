@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.TestHarness", "Snoo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle", "Snoozle\Snoozle.csproj", "{CF21C65A-27D0-4063-B424-3AB7B45F86C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle.SqlServer", "Snoozle.SqlServer\Snoozle.SqlServer.csproj", "{550E2F09-D521-418E-903A-ABE6F3769293}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.SqlServer", "Snoozle.SqlServer\Snoozle.SqlServer.csproj", "{550E2F09-D521-418E-903A-ABE6F3769293}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

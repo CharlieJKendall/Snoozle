@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public class SqlRuntimeConfigurationProvider : BaseRuntimeConfigurationProvider<ISqlRuntimeConfiguration<IRestResource>>, ISqlRuntimeConfigurationProvider
     {

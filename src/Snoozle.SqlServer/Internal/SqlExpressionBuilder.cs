@@ -1,14 +1,13 @@
 ﻿using Snoozle.Abstractions;
-using Snoozle.SqlServer.Configuration;
 using Snoozle.SqlServer.Extensions;
-using Snoozle.SqlServer.Interfaces;
+using Snoozle.SqlServer.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace Snoozle.SqlServer
+namespace Snoozle.SqlServer.Internal
 {
     public class SqlExpressionBuilder : ISqlExpressionBuilder
     {
@@ -137,14 +136,30 @@ namespace Snoozle.SqlServer
                     return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetFloat), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(long):
                     return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetInt64), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(DateTimeOffset):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDateTimeOffset), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(decimal):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDecimal), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(char):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetChar), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(TimeSpan):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetTimeSpan), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(byte):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetByte), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(short):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetInt16), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal == typeof(Guid):
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetGuid), dataIndex, property);
+                case Type _ when unwrappedTypeOrOriginal.IsEnum:
+                    return GetMethodCallWithCast(true, dataReaderInstance, nameof(SqlDataReader.GetInt32), dataIndex, property);
                 default:
                     throw new NotSupportedException($"Type {unwrappedTypeOrOriginal.Name} is not supported.");
             }
         }
 
-        private Expression GetMethodCallWithCast(bool isNullableValueType, Expression dataReaderInstance, string dataReaderMethodName, Expression dataIndex, MemberExpression property)
+        private Expression GetMethodCallWithCast(bool shouldCastToPropertyType, Expression dataReaderInstance, string dataReaderMethodName, Expression dataIndex, MemberExpression property)
         {
-            if (isNullableValueType)
+            if (shouldCastToPropertyType)
             {
                 return Expression.Convert(Expression.Call(dataReaderInstance, dataReaderMethodName, null, dataIndex), property.Type);
             }

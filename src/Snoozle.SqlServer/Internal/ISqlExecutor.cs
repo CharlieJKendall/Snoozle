@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace Snoozle.SqlServer.Interfaces
+namespace Snoozle.SqlServer.Internal
 {
     public interface ISqlExecutor
     {

@@ -2,14 +2,32 @@
 using Snoozle.SqlServer.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Data;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public abstract class SqlResourceConfigurationBuilder<TResource> : BaseResourceConfigurationBuilder<TResource, ISqlPropertyConfiguration, ISqlResourceConfiguration, ISqlModelConfiguration>
         where TResource : class, IRestResource
     {
+        private readonly Dictionary<Type, SqlDbType?> _defaultSqlDbTypeMap = new Dictionary<Type, SqlDbType?>
+        {
+            { typeof(long), SqlDbType.BigInt },
+            { typeof(byte[]), SqlDbType.VarBinary },
+            { typeof(bool), SqlDbType.Bit },
+            { typeof(string), SqlDbType.NVarChar },
+            { typeof(DateTime), SqlDbType.DateTime },
+            { typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
+            { typeof(decimal), SqlDbType.Decimal },
+            { typeof(double), SqlDbType.Float },
+            { typeof(float), SqlDbType.Float },
+            { typeof(int), SqlDbType.Int },
+            { typeof(short), SqlDbType.SmallInt },
+            { typeof(TimeSpan), SqlDbType.Time },
+            { typeof(Guid), SqlDbType.UniqueIdentifier },
+            { typeof(byte), SqlDbType.TinyInt },
+            { typeof(char), SqlDbType.Char }
+        };
+
         protected override IPropertyConfigurationBuilder<TProperty, ISqlPropertyConfiguration> CreatePropertyConfigurationBuilder<TProperty>(
             ISqlPropertyConfiguration propertyConfiguration)
         {
@@ -42,7 +60,8 @@ namespace Snoozle.SqlServer.Configuration
 
             foreach (ISqlPropertyConfiguration propertyConfig in PropertyConfigurations)
             {
-                propertyConfig.SqlDbType = GetDefaultSqlDbType(propertyConfig.PropertyType);
+                propertyConfig.SqlDbType = GetDefaultSqlDbType(propertyConfig.PropertyType)
+                    ?? throw new InvalidOperationException($"{propertyConfig.PropertyType.Name} is not a valid property type.");
                 propertyConfig.ColumnName = propertyConfig.PropertyName;
             }
         }
@@ -50,28 +69,8 @@ namespace Snoozle.SqlServer.Configuration
         private SqlDbType? GetDefaultSqlDbType(Type type)
         {
             type.TryUnwrapNullableType(out Type unwrappedType);
-            return Maps.DefaultSqlDbTypeMap.GetValueOrDefault(unwrappedType);
-        }
-    }
 
-    public static class Maps
-    {
-        public static ReadOnlyDictionary<Type, SqlDbType?> DefaultSqlDbTypeMap = new ReadOnlyDictionary<Type, SqlDbType?>(new Dictionary<Type, SqlDbType?>
-        {
-            { typeof(long), SqlDbType.BigInt },
-            { typeof(byte[]), SqlDbType.VarBinary },
-            { typeof(bool), SqlDbType.Bit },
-            { typeof(string), SqlDbType.NVarChar },
-            { typeof(DateTime), SqlDbType.DateTime },
-            { typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
-            { typeof(decimal), SqlDbType.Decimal },
-            { typeof(double), SqlDbType.Float },
-            { typeof(float), SqlDbType.Float },
-            { typeof(int), SqlDbType.Int },
-            { typeof(short), SqlDbType.SmallInt },
-            { typeof(TimeSpan), SqlDbType.Time },
-            { typeof(Guid), SqlDbType.UniqueIdentifier },
-            { typeof(byte), SqlDbType.TinyInt }
-        });
+            return unwrappedType.IsEnum ? SqlDbType.Int : _defaultSqlDbTypeMap.GetValueOrDefault(unwrappedType);
+        }
     }
 }

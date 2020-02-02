@@ -1,6 +1,6 @@
 ﻿using Snoozle.Abstractions;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public interface ISqlModelConfiguration : IModelConfiguration
     {

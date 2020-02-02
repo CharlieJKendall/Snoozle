@@ -1,4 +1,5 @@
-﻿using Snoozle.Extensions;
+﻿using Snoozle.Enums;
+using Snoozle.Extensions;
 using System.Text.RegularExpressions;
 
 namespace Snoozle.Abstractions

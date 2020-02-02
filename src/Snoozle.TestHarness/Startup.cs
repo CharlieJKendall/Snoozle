@@ -11,7 +11,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Snoozle.Enums;
 using Snoozle.Extensions;
+using Snoozle.SqlServer.Configuration;
 using Snoozle.SqlServer.Extensions;
 
 namespace Snoozle.TestHarness
@@ -31,7 +33,16 @@ namespace Snoozle.TestHarness
             services
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                .AddSnoozleSqlServer();
+                //.AddSnoozleSqlServer(Configuration.GetSection(nameof(SnoozleSqlServerOptions)));
+                .AddSnoozleSqlServer(
+                    options =>
+                    {
+                        options.ConnectionString = "Server=.;Database=Snoozle;Trusted_Connection=True;";
+                    });
+
+            services.AddSnoozle(options =>
+                {
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

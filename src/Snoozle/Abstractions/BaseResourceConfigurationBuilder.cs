@@ -1,6 +1,4 @@
-﻿using Snoozle.Extensions;
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,7 +12,7 @@ namespace Snoozle.Abstractions
         where TResourceConfiguration : class, IResourceConfiguration<TPropertyConfiguration, TModelConfiguration>
         where TModelConfiguration : class, IModelConfiguration
     {
-        private readonly ConcurrentDictionary<string, TPropertyConfiguration> _propertyConfigurations = new ConcurrentDictionary<string, TPropertyConfiguration>();
+        private readonly Dictionary<string, TPropertyConfiguration> _propertyConfigurations = new Dictionary<string, TPropertyConfiguration>();
 
         public IEnumerable<TPropertyConfiguration> PropertyConfigurations => _propertyConfigurations.Values;
 

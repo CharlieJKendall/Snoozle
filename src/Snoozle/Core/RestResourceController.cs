@@ -1,5 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Snoozle.Abstractions;
+using Snoozle.Configuration;
+using Snoozle.Enums;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
@@ -12,17 +16,25 @@ namespace Snoozle.Core
     {
         private readonly IDataProvider _dataProvider;
         private readonly IRuntimeConfiguration _runtimeConfiguration;
+        private readonly ILogger<RestResourceController<T>> _logger;
+        private readonly SnoozleOptions _options;
 
-        public RestResourceController(IDataProvider dataProvider, IRuntimeConfigurationProvider<IRuntimeConfiguration> runtimeConfigurationProvider)
+        public RestResourceController(
+            IDataProvider dataProvider,
+            IRuntimeConfigurationProvider<IRuntimeConfiguration> runtimeConfigurationProvider,
+            ILogger<RestResourceController<T>> logger,
+            IOptions<SnoozleOptions> options)
         {
             _dataProvider = dataProvider;
             _runtimeConfiguration = runtimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(T));
+            _logger = logger;
+            _options = options.Value;
         }
 
         [HttpPost]
         public async Task<ActionResult<T>> Post([FromBody] T resourceToCreate)
         {
-            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.POST) != HttpVerb.POST)
+            if (MethodIsDisallowed(HttpVerb.POST))
             {
                 return MethodNotAllowed();
             }
@@ -40,7 +52,7 @@ namespace Snoozle.Core
         [HttpGet]
         public async Task<ActionResult<IEnumerable<T>>> GetAll()
         {
-            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.GET) != HttpVerb.GET)
+            if (MethodIsDisallowed(HttpVerb.GET))
             {
                 return MethodNotAllowed();
             }
@@ -53,7 +65,7 @@ namespace Snoozle.Core
         [HttpGet("{id}")]
         public async Task<ActionResult<T>> GetById(string id)
         {
-            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.GET) != HttpVerb.GET)
+            if (MethodIsDisallowed(HttpVerb.GET))
             {
                 return MethodNotAllowed();
             }
@@ -71,7 +83,7 @@ namespace Snoozle.Core
         [HttpPut("{id}")]
         public async Task<ActionResult<T>> Put(string id, [FromBody] T resourceToUpdate)
         {
-            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.PUT) != HttpVerb.PUT)
+            if (MethodIsDisallowed(HttpVerb.PUT))
             {
                 return MethodNotAllowed();
             }
@@ -94,7 +106,7 @@ namespace Snoozle.Core
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            if ((_runtimeConfiguration.AllowedVerbsFlags & HttpVerb.DELETE) != HttpVerb.DELETE)
+            if (MethodIsDisallowed(HttpVerb.DELETE))
             {
                 return MethodNotAllowed();
             }
@@ -113,7 +125,17 @@ namespace Snoozle.Core
 
         private ActionResult MethodNotAllowed()
         {
+            _logger.LogInformation("HTTP method {HttpMethod} is not allowed for path {UrlPath}", HttpContext.Request.Method, HttpContext.Request.Path.Value);
+
             return StatusCode((int)HttpStatusCode.MethodNotAllowed);
+        }
+
+        private bool MethodIsDisallowed(HttpVerb httpVerb)
+        {
+            var disallowedGlobally = (_options.AllowedVerbs & httpVerb) != httpVerb;
+            var disallowedOnResource = (_runtimeConfiguration.AllowedVerbsFlags & httpVerb) != httpVerb;
+
+            return disallowedGlobally || disallowedOnResource;
         }
     }
 }

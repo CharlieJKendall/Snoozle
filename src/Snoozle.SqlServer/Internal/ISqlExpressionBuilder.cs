@@ -1,10 +1,10 @@
 ﻿using Snoozle.Abstractions;
-using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
-namespace Snoozle.SqlServer.Interfaces
+namespace Snoozle.SqlServer.Internal
 {
     public interface ISqlExpressionBuilder
     {

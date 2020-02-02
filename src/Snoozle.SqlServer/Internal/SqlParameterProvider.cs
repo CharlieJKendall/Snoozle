@@ -1,7 +1,6 @@
-﻿using Snoozle.SqlServer.Interfaces;
-using System;
+﻿using System;
 
-namespace Snoozle.SqlServer
+namespace Snoozle.SqlServer.Internal
 {
     public class SqlParameterProvider : ISqlParamaterProvider
     {

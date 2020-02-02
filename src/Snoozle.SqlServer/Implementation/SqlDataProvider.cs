@@ -1,27 +1,30 @@
-﻿using Snoozle.Abstractions;
-using Snoozle.SqlServer.Configuration;
-using Snoozle.SqlServer.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Snoozle.Abstractions;
+using Snoozle.SqlServer.Internal;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Snoozle.SqlServer
+namespace Snoozle.SqlServer.Implementation
 {
     public class SqlDataProvider : IDataProvider
     {
         private readonly ISqlRuntimeConfigurationProvider _sqlRuntimeConfigurationProvider;
         private readonly ISqlExecutor _sqlExecutor;
+        private readonly ILogger<IDataProvider> _logger;
 
-        public SqlDataProvider(ISqlRuntimeConfigurationProvider sqlRuntimeConfigurationProvider, ISqlExecutor sqlExecutor)
+        public SqlDataProvider(ISqlRuntimeConfigurationProvider sqlRuntimeConfigurationProvider, ISqlExecutor sqlExecutor, ILogger<IDataProvider> logger)
         {
             _sqlRuntimeConfigurationProvider = sqlRuntimeConfigurationProvider;
             _sqlExecutor = sqlExecutor;
+            _logger = logger;
         }
 
         public async Task<bool> ExecuteDeleteByIdAsync<TResource>(object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
+
             return await _sqlExecutor.ExecuteDeleteByIdAsync(
                 config.DeleteById,
                 config.GetPrimaryKeySqlParameter,
@@ -32,6 +35,7 @@ namespace Snoozle.SqlServer
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
+
             return await _sqlExecutor.ExecuteInsertAsync(
                 config.Insert,
                 config.GetNonPrimaryKeySqlParameters,
@@ -43,6 +47,7 @@ namespace Snoozle.SqlServer
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
+
             return await _sqlExecutor.ExecuteSelectAllAsync(config.SelectAll, config.GetSqlMapToResource);
         }
 
@@ -61,6 +66,8 @@ namespace Snoozle.SqlServer
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to find resource of type {Type} with a primary key value of {PrimaryKey}", typeof(TResource).Name, primaryKey);
+
                 return null;
             }
         }
@@ -69,6 +76,7 @@ namespace Snoozle.SqlServer
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
+
             return await _sqlExecutor.ExecuteUpdateAsync(
                 config.UpdateById,
                 config.GetNonPrimaryKeySqlParameters,
@@ -80,7 +88,7 @@ namespace Snoozle.SqlServer
         private ISqlRuntimeConfiguration<TResource> GetConfig<TResource>()
             where TResource : class, IRestResource
         {
-            return _sqlRuntimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(TResource)) as ISqlRuntimeConfiguration<TResource>;
+            return (ISqlRuntimeConfiguration<TResource>)_sqlRuntimeConfigurationProvider.GetRuntimeConfigurationForType(typeof(TResource));
         }
     }
 }

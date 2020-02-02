@@ -1,4 +1,4 @@
-﻿namespace Snoozle.SqlServer.Interfaces
+﻿namespace Snoozle.SqlServer.Internal
 {
     public interface ISqlParamaterProvider
     {

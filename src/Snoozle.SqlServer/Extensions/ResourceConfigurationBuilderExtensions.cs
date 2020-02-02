@@ -1,6 +1,5 @@
 ﻿using Snoozle.Abstractions;
-using Snoozle.Extensions;
-using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Implementation;
 using System.Data;
 using System.Text.RegularExpressions;
 
