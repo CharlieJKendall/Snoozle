@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Snoozle
+namespace Snoozle.Exceptions
 {
     public static class ExceptionHelper
     {

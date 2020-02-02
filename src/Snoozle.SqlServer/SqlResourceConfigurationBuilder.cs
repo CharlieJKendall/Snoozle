@@ -1,10 +1,11 @@
 ﻿using Snoozle.Abstractions;
 using Snoozle.SqlServer.Extensions;
+using Snoozle.SqlServer.Implementation;
 using System;
 using System.Collections.Generic;
 using System.Data;
 
-namespace Snoozle.SqlServer.Implementation
+namespace Snoozle.SqlServer
 {
     public abstract class SqlResourceConfigurationBuilder<TResource> : BaseResourceConfigurationBuilder<TResource, ISqlPropertyConfiguration, ISqlResourceConfiguration, ISqlModelConfiguration>
         where TResource : class, IRestResource

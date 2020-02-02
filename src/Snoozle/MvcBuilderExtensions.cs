@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Snoozle.Extensions
+namespace Snoozle
 {
     public static class MvcBuilderExtensions
     {
@@ -18,7 +18,7 @@ namespace Snoozle.Extensions
             IServiceCollection serviceCollection = @this.Services;
             var baseRuntimeConfgurationProvider = runtimeConfigurationProvider as IRuntimeConfigurationProvider<IRuntimeConfiguration>;
 
-            serviceCollection.AddSingleton(runtimeConfigurationProvider as IRuntimeConfigurationProvider<IRuntimeConfiguration>);
+            serviceCollection.AddSingleton(baseRuntimeConfgurationProvider);
 
             // Get all rest resources defined in application domain
             IEnumerable<TypeInfo> restResources = AppDomain.CurrentDomain.GetAssemblies()

@@ -1,4 +1,4 @@
-﻿namespace Snoozle.Abstractions
+﻿namespace Snoozle
 {
     public interface IRestResource
     {
