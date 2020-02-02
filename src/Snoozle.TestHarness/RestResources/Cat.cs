@@ -1,6 +1,7 @@
 ﻿using Snoozle.Abstractions;
+using Snoozle.Enums;
 using Snoozle.Extensions;
-using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Implementation;
 using Snoozle.SqlServer.Extensions;
 using System;
 
@@ -10,7 +11,7 @@ namespace Snoozle.TestHarness.RestResources
     {
         public int Id { get; set; }
 
-        public int HairLength { get; set; }
+        public Test? HairLength { get; set; }
 
         public string Name { get; set; }
 
@@ -32,4 +33,10 @@ namespace Snoozle.TestHarness.RestResources
             ConfigurationForProperty(x => x.Name).HasColumnName("CatName").HasComputedValue().Custom(() => "HELLO");
         }
     }
+
+    public enum Test
+    {
+        HEY = 1
+    }
+
 }

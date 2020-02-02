@@ -1,9 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Snoozle.Abstractions;
-using Snoozle.Core;
 using Snoozle.Extensions;
 using Snoozle.SqlServer.Configuration;
-using Snoozle.SqlServer.Interfaces;
+using Snoozle.SqlServer.Implementation;
+using Snoozle.SqlServer.Internal;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -12,13 +13,29 @@ namespace Snoozle.SqlServer.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IMvcBuilder AddSnoozleSqlServer(this IMvcBuilder @this)
+        public static IMvcBuilder AddSnoozleSqlServer(this IMvcBuilder @this, IConfigurationSection configurationSection)
+        {
+            @this.Services.Configure<SnoozleSqlServerOptions>(options => configurationSection.Bind(options));
+
+            return AddSnoozleSqlServer(@this);
+        }
+
+        public static IMvcBuilder AddSnoozleSqlServer(this IMvcBuilder @this, Action<SnoozleSqlServerOptions> optionsBuilder)
+        {
+            @this.Services.Configure(optionsBuilder);
+
+            return AddSnoozleSqlServer(@this);
+        }
+
+        private static IMvcBuilder AddSnoozleSqlServer(this IMvcBuilder @this)
         {
             IServiceCollection serviceCollection = @this.Services;
             ISqlRuntimeConfigurationProvider runtimeConfigurationProvider = BuildRuntimeConfigurationProvider();
 
+            serviceCollection.Configure<SnoozleSqlServerOptions>(options => new SnoozleSqlServerOptions());
             serviceCollection.AddScoped<ISqlExecutor, SqlExecutor>();
             serviceCollection.AddScoped<IDataProvider, SqlDataProvider>();
+            serviceCollection.AddScoped<ISqlClassProvider, SqlClassProvider>();
             serviceCollection.AddSingleton(runtimeConfigurationProvider);
 
             @this.AddSnoozleCore(runtimeConfigurationProvider);
@@ -26,15 +43,15 @@ namespace Snoozle.SqlServer.Extensions
             return @this;
         }
 
-        public static ISqlRuntimeConfigurationProvider BuildRuntimeConfigurationProvider()
+        private static ISqlRuntimeConfigurationProvider BuildRuntimeConfigurationProvider()
         {
             IEnumerable<ISqlResourceConfiguration> resourceConfigurations =
-                Helpers.BuildResourceConfigurations<ISqlPropertyConfiguration, ISqlResourceConfiguration, ISqlModelConfiguration>(typeof(SqlResourceConfigurationBuilder<>));
+                ResourceConfigurationBuilder.Build<ISqlPropertyConfiguration, ISqlResourceConfiguration, ISqlModelConfiguration>(typeof(SqlResourceConfigurationBuilder<>));
 
             // No need to register these with the DI container, as they are only used during startup
             ISqlParamaterProvider sqlParamaterProvider = new SqlParameterProvider();
             ISqlGenerator generator = new SqlGenerator(sqlParamaterProvider);
-            ISqlExpressionBuilder expressionBuilder = new SqlExpressionBuilder(sqlParamaterProvider);
+            ISqlExpressionBuilder sqlExpressionBuilder = new SqlExpressionBuilder(sqlParamaterProvider);
             Dictionary<Type, ISqlRuntimeConfiguration<IRestResource>> runtimeConfigurations = new Dictionary<Type, ISqlRuntimeConfiguration<IRestResource>>();
 
             foreach (ISqlResourceConfiguration configuration in resourceConfigurations)
@@ -48,10 +65,10 @@ namespace Snoozle.SqlServer.Extensions
                 var createObjectRelationalMapFunc = typeof(ISqlExpressionBuilder)
                     .GetMethod(nameof(ISqlExpressionBuilder.CreateObjectRelationalMap))
                     .MakeGenericMethod(configuration.ResourceType)
-                    .Invoke(expressionBuilder, new[] { configuration }) as Func<SqlDataReader, IRestResource>;
+                    .Invoke(sqlExpressionBuilder, new[] { configuration }) as Func<SqlDataReader, IRestResource>;
 
-                var getPrimaryKeySqlParameterFunc = expressionBuilder.GetPrimaryKeySqlParameter(configuration.PrimaryIdentifier);
-                var getNonPrimaryKeySqlParametersFunc = expressionBuilder.GetNonPrimaryKeySqlParameters(configuration);
+                var getPrimaryKeySqlParameterFunc = sqlExpressionBuilder.GetPrimaryKeySqlParameter(configuration.PrimaryIdentifier);
+                var getNonPrimaryKeySqlParametersFunc = sqlExpressionBuilder.GetNonPrimaryKeySqlParameters(configuration);
 
                 var runtimeConfiguration = Activator.CreateInstance(
                     typeof(SqlRuntimeConfiguration<>).MakeGenericType(configuration.ResourceType),

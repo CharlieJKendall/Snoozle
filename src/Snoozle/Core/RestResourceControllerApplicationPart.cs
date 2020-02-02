@@ -11,7 +11,7 @@ namespace Snoozle.Core
             Types = restResourceTypeInfos;
         }
 
-        public override string Name => "RestResourceController";
+        public override string Name => typeof(RestResourceController<>).Name;
 
         public IEnumerable<TypeInfo> Types { get; }
     }

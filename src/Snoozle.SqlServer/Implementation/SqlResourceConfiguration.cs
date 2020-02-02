@@ -1,7 +1,7 @@
 ﻿using Snoozle.Abstractions;
 using System.Collections.Generic;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public class SqlResourceConfiguration<TResource> : BaseResourceConfiguration<TResource, ISqlPropertyConfiguration, ISqlModelConfiguration>, ISqlResourceConfiguration
         where TResource : class, IRestResource

@@ -1,27 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Snoozle.Abstractions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Snoozle.Core
 {
     internal class RestResourceControllerModelConvention : IControllerModelConvention
     {
-        private readonly IRuntimeConfigurationProvider<IRuntimeConfiguration> _runtimeConfigurationProvider;
+        private readonly Dictionary<Type, string> _routes;
 
-        public RestResourceControllerModelConvention(IRuntimeConfigurationProvider<IRuntimeConfiguration> runtimeConfigurationProvider)
+        public RestResourceControllerModelConvention(Dictionary<Type, string> routes)
         {
-            _runtimeConfigurationProvider = runtimeConfigurationProvider;
+            _routes = routes;
         }
 
         public void Apply(ControllerModel controller)
         {
-            var resourceType = controller.ControllerType.GetGenericArguments().SingleOrDefault(arg => arg.GetInterfaces().Contains(typeof(IRestResource)));
+            Type resourceType = controller.ControllerType.GetGenericArguments().SingleOrDefault(arg => arg.GetInterfaces().Contains(typeof(IRestResource)));
 
             if (resourceType != null)
             {
-                IRuntimeConfiguration config = _runtimeConfigurationProvider.GetRuntimeConfigurationForType(resourceType);
-                controller.ControllerName = config.Route;
+                controller.ControllerName = _routes.GetValueOrDefault(resourceType)
+                    ?? throw new InvalidOperationException($"No route found for resource {resourceType.Name}.");
             }
         }
     }

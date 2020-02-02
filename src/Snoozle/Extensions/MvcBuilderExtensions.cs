@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Snoozle.Abstractions;
+using Snoozle.Configuration;
 using Snoozle.Core;
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,7 @@ namespace Snoozle.Extensions
             where TRuntimeConfiguration : class, IRuntimeConfiguration
         {
             IServiceCollection serviceCollection = @this.Services;
+            var baseRuntimeConfgurationProvider = runtimeConfigurationProvider as IRuntimeConfigurationProvider<IRuntimeConfiguration>;
 
             serviceCollection.AddSingleton(runtimeConfigurationProvider as IRuntimeConfigurationProvider<IRuntimeConfiguration>);
 
@@ -29,8 +32,22 @@ namespace Snoozle.Extensions
             @this.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new RestResourceControllerApplicationPart(controllerTypeInfos)));
 
             // Add custom controller model convention to ensure controller route matches resource name
-            @this.AddMvcOptions(options => options.Conventions.Add(
-                new RestResourceControllerModelConvention(runtimeConfigurationProvider as IRuntimeConfigurationProvider<IRuntimeConfiguration>)));            
+            var routes = new Dictionary<Type, string>(baseRuntimeConfgurationProvider.TypesConfigured.Select(c => KeyValuePair.Create(c, baseRuntimeConfgurationProvider.GetRuntimeConfigurationForType(c).Route)));
+            @this.AddMvcOptions(options => options.Conventions.Add(new RestResourceControllerModelConvention(routes)));            
+
+            return @this;
+        }
+
+        public static IServiceCollection AddSnoozle(this IServiceCollection @this, Action<SnoozleOptions> optionsBuilder)
+        {
+            @this.Configure(optionsBuilder);
+
+            return @this;
+        }
+
+        public static IServiceCollection AddSnoozle(this IServiceCollection @this, IConfigurationSection configurationSection)
+        {
+            @this.Configure<SnoozleOptions>(options => configurationSection.Bind(options));
 
             return @this;
         }

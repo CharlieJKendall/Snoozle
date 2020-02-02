@@ -1,7 +1,7 @@
 ﻿using Snoozle.Abstractions;
 using System.Data;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public interface ISqlPropertyConfiguration : IPropertyConfiguration
     {

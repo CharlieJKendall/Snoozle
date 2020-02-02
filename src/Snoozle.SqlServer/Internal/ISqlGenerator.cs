@@ -1,6 +1,6 @@
-﻿using Snoozle.SqlServer.Configuration;
+﻿using Snoozle.SqlServer.Implementation;
 
-namespace Snoozle.SqlServer.Interfaces
+namespace Snoozle.SqlServer.Internal
 {
     public interface ISqlGenerator
     {

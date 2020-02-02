@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public class SqlRuntimeConfiguration<TResource> : BaseRuntimeConfiguration<ISqlPropertyConfiguration, ISqlModelConfiguration>, ISqlRuntimeConfiguration<TResource>
         where TResource : class, IRestResource

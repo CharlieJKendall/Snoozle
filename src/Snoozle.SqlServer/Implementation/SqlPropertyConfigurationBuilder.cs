@@ -1,6 +1,6 @@
 ﻿using Snoozle.Abstractions;
 
-namespace Snoozle.SqlServer.Configuration
+namespace Snoozle.SqlServer.Implementation
 {
     public class SqlPropertyConfigurationBuilder<TResource, TProperty> : BasePropertyConfigurationBuilder<TResource, TProperty, ISqlPropertyConfiguration>, IPropertyConfigurationBuilder<TProperty, ISqlPropertyConfiguration>
         where TResource : class, IRestResource

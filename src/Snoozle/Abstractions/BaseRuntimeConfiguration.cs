@@ -1,4 +1,5 @@
-﻿using Snoozle.Expressions;
+﻿using Snoozle.Enums;
+using Snoozle.Expressions;
 using System;
 
 namespace Snoozle.Abstractions

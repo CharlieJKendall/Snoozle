@@ -1,10 +1,9 @@
-﻿using Snoozle.SqlServer.Configuration;
-using Snoozle.SqlServer.Extensions;
-using Snoozle.SqlServer.Interfaces;
+﻿using Snoozle.SqlServer.Extensions;
+using Snoozle.SqlServer.Implementation;
 using System.Linq;
 using System.Text;
 
-namespace Snoozle.SqlServer
+namespace Snoozle.SqlServer.Internal
 {
     public class SqlGenerator : ISqlGenerator
     {
