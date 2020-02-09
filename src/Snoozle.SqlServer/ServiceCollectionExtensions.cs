@@ -4,9 +4,9 @@ using Snoozle.Abstractions;
 using Snoozle.SqlServer.Configuration;
 using Snoozle.SqlServer.Implementation;
 using Snoozle.SqlServer.Internal;
+using Snoozle.SqlServer.Internal.Wrappers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 
 namespace Snoozle.SqlServer
 {
@@ -50,7 +50,7 @@ namespace Snoozle.SqlServer
             // No need to register these with the DI container, as they are only used during startup
             ISqlParamaterProvider sqlParamaterProvider = new SqlParameterProvider();
             ISqlGenerator generator = new SqlGenerator(sqlParamaterProvider);
-            ISqlExpressionBuilder sqlExpressionBuilder = new SqlExpressionBuilder(sqlParamaterProvider);
+            ISqlExpressionBuilder sqlExpressionBuilder = new SqlExpressionBuilder(sqlParamaterProvider, new SqlClassProvider());
             Dictionary<Type, ISqlRuntimeConfiguration<IRestResource>> runtimeConfigurations = new Dictionary<Type, ISqlRuntimeConfiguration<IRestResource>>();
 
             foreach (ISqlResourceConfiguration configuration in resourceConfigurations)
@@ -64,7 +64,7 @@ namespace Snoozle.SqlServer
                 var createObjectRelationalMapFunc = typeof(ISqlExpressionBuilder)
                     .GetMethod(nameof(ISqlExpressionBuilder.CreateObjectRelationalMap))
                     .MakeGenericMethod(configuration.ResourceType)
-                    .Invoke(sqlExpressionBuilder, new[] { configuration }) as Func<SqlDataReader, IRestResource>;
+                    .Invoke(sqlExpressionBuilder, new[] { configuration }) as Func<IDatabaseResultReader, IRestResource>;
 
                 var getPrimaryKeySqlParameterFunc = sqlExpressionBuilder.GetPrimaryKeySqlParameter(configuration.PrimaryIdentifier);
                 var getNonPrimaryKeySqlParametersFunc = sqlExpressionBuilder.GetNonPrimaryKeySqlParameters(configuration);

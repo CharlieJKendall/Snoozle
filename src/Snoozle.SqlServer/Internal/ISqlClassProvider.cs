@@ -1,11 +1,14 @@
-﻿using System.Data.SqlClient;
+﻿using Snoozle.SqlServer.Internal.Wrappers;
+using System.Data;
 
 namespace Snoozle.SqlServer.Internal
 {
     public interface ISqlClassProvider
     {
-        SqlCommand CreateSqlCommand(string sql, SqlConnection sqlConnection);
+        IDatabaseCommand CreateSqlCommand(string sql, IDatabaseConnection databaseConnection);
 
-        SqlConnection CreateSqlConnection(string connectionString);
+        IDatabaseConnection CreateSqlConnection(string connectionString);
+
+        IDatabaseCommandParameter CreateDatabaseCommandParameter(string parameterName, object value, SqlDbType sqlDbType, bool isNullable);
     }
 }
