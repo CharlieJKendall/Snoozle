@@ -1,9 +1,8 @@
-﻿using Snoozle.Abstractions;
-using Snoozle.SqlServer.Extensions;
+﻿using Snoozle.SqlServer.Extensions;
 using Snoozle.SqlServer.Implementation;
+using Snoozle.SqlServer.Internal.Wrappers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -12,27 +11,29 @@ namespace Snoozle.SqlServer.Internal
     public class SqlExpressionBuilder : ISqlExpressionBuilder
     {
         private readonly ISqlParamaterProvider _sqlParamaterProvider;
+        private readonly ISqlClassProvider _sqlClassProvider;
 
-        public SqlExpressionBuilder(ISqlParamaterProvider sqlParamaterProvider)
+        public SqlExpressionBuilder(ISqlParamaterProvider sqlParamaterProvider, ISqlClassProvider sqlClassProvider)
         {
             _sqlParamaterProvider = sqlParamaterProvider;
+            _sqlClassProvider = sqlClassProvider;
         }
 
-        public Func<object, SqlParameter> GetPrimaryKeySqlParameter(ISqlPropertyConfiguration primaryIdentifierConfig)
+        public Func<object, IDatabaseCommandParameter> GetPrimaryKeySqlParameter(ISqlPropertyConfiguration primaryIdentifierConfig)
         {
             return GetSqlParameter(primaryIdentifierConfig, _sqlParamaterProvider.GetPrimaryKeyParameterName(), false).Compile();
         }
 
-        public Func<object, List<SqlParameter>> GetNonPrimaryKeySqlParameters(ISqlResourceConfiguration config)
+        public Func<object, List<IDatabaseCommandParameter>> GetNonPrimaryKeySqlParameters(ISqlResourceConfiguration config)
         {
-            var configs = config.PropertyConfigurationsForWrite.ToArray();
+            ISqlPropertyConfiguration[] configs = config.PropertyConfigurationsForWrite.ToArray();
 
             var paramResource = Expression.Parameter(typeof(object), "resourceObject");
             var typedParam = Expression.Convert(paramResource, config.ResourceType);
-            var result = Expression.Variable(typeof(List<SqlParameter>), "sqlParameters");
+            var result = Expression.Variable(typeof(List<IDatabaseCommandParameter>), "databaseCommandParameter");
             var typedParamVar = Expression.Variable(config.ResourceType, "typedParam");
             var assignTypedParamVar = Expression.Assign(typedParamVar, typedParam);
-            var instantiateResultObj = Expression.Assign(result, Expression.New(typeof(List<SqlParameter>)));
+            var instantiateResultObj = Expression.Assign(result, Expression.New(typeof(List<IDatabaseCommandParameter>)));
 
             List<Expression> expressions = new List<Expression>
             {
@@ -42,12 +43,12 @@ namespace Snoozle.SqlServer.Internal
 
             for (int i = 0; i < configs.Length; i++)
             {
-                MemberExpression property = Expression.Property(typedParamVar, configs[i].PropertyName);
-                Expression<Func<object, SqlParameter>> sqlParam = GetSqlParameter(configs[i], _sqlParamaterProvider.GenerateParameterName(configs[i].PropertyName));
-                InvocationExpression getSqlParam = Expression.Invoke(sqlParam, Expression.Convert(property, typeof(object)));
-                MethodCallExpression generateNameAndAddToList = Expression.Call(
+                var property = Expression.Property(typedParamVar, configs[i].PropertyName);
+                var sqlParam = GetSqlParameter(configs[i], _sqlParamaterProvider.GenerateParameterName(configs[i].PropertyName));
+                var getSqlParam = Expression.Invoke(sqlParam, Expression.Convert(property, typeof(object)));
+                var generateNameAndAddToList = Expression.Call(
                     result,
-                    nameof(List<SqlParameter>.Add),
+                    nameof(List<IDatabaseCommandParameter>.Add),
                     null,
                     getSqlParam);
 
@@ -57,7 +58,7 @@ namespace Snoozle.SqlServer.Internal
             // Return the result from the expression
             expressions.Add(result);
 
-            var lambda = Expression.Lambda<Func<object, List<SqlParameter>>>(
+            var lambda = Expression.Lambda<Func<object, List<IDatabaseCommandParameter>>>(
                 Expression.Block(
                     new[] { result, typedParamVar },
                     expressions),
@@ -66,22 +67,17 @@ namespace Snoozle.SqlServer.Internal
             return lambda.Compile();
         }
 
-        private Expression<Func<object, SqlParameter>> GetSqlParameter(ISqlPropertyConfiguration config, string paramName, bool isNullable = true)
+        private Expression<Func<object, IDatabaseCommandParameter>> GetSqlParameter(ISqlPropertyConfiguration config, string paramName, bool isNullable = true)
         {
-            return (value) =>
-                new SqlParameter(paramName, value ?? DBNull.Value)
-                {
-                    SqlDbType = config.SqlDbType.Value,
-                    IsNullable = isNullable
-                };
+            return (value) => _sqlClassProvider.CreateDatabaseCommandParameter(paramName, value, config.SqlDbType.Value, isNullable);               
         }
 
-        public Func<SqlDataReader, T> CreateObjectRelationalMap<T>(ISqlResourceConfiguration config)
+        public Func<IDatabaseResultReader, T> CreateObjectRelationalMap<T>(ISqlResourceConfiguration config)
             where T : class, IRestResource
         {
-            var orderedConfigs = config.PropertyConfigurationsForRead.OrderBy(prop => prop.Index).ToArray();
+            ISqlPropertyConfiguration[] orderedConfigs = config.PropertyConfigurationsForRead.OrderBy(prop => prop.Index).ToArray();
 
-            var paramDataReader = Expression.Parameter(typeof(SqlDataReader), "sqlDataReader");
+            var paramDataReader = Expression.Parameter(typeof(IDatabaseResultReader), "databaseResultReader");
             var result = Expression.Variable(typeof(T), "result");
             var instantiateResultObj = Expression.Assign(result, Expression.New(typeof(T)));
 
@@ -94,14 +90,9 @@ namespace Snoozle.SqlServer.Internal
             for (int i = 0; i < orderedConfigs.Length; i++)
             {
                 var property = Expression.Property(result, orderedConfigs[i].PropertyName);
-                var assignProperty = Expression.IfThenElse(
-                    Expression.Call(paramDataReader, nameof(SqlDataReader.IsDBNull), null, Expression.Constant(i)),
-                    Expression.Assign(
-                        Expression.MakeMemberAccess(result, property.Member),
-                        Expression.Default(property.Type)),
-                    Expression.Assign(
-                        Expression.MakeMemberAccess(result, property.Member),
-                        GetMethodCallForType(paramDataReader, Expression.Constant(i), property)));
+                var assignProperty = Expression.Assign(
+                    Expression.MakeMemberAccess(result, property.Member),
+                    GetMethodCallForType(paramDataReader, Expression.Constant(i), property));
 
                 expressions.Add(assignProperty);
             }
@@ -109,7 +100,7 @@ namespace Snoozle.SqlServer.Internal
             // Return the result from the expression
             expressions.Add(result);
 
-            var lambda = Expression.Lambda<Func<SqlDataReader, T>>(
+            var lambda = Expression.Lambda<Func<IDatabaseResultReader, T>>(
                 Expression.Block(
                     new[] { result },
                     expressions),
@@ -125,33 +116,33 @@ namespace Snoozle.SqlServer.Internal
             switch (unwrappedTypeOrOriginal)
             {
                 case Type _ when unwrappedTypeOrOriginal == typeof(string):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetString), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetString), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(int):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetInt32), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetInt32), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(DateTime):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDateTime), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetDateTime), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(double):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDouble), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetDouble), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(float):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetFloat), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetFloat), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(long):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetInt64), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetInt64), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(DateTimeOffset):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDateTimeOffset), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetDateTimeOffset), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(decimal):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetDecimal), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetDecimal), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(char):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetChar), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetChar), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(TimeSpan):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetTimeSpan), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetTimeSpan), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(byte):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetByte), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetByte), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(short):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetInt16), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetInt16), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal == typeof(Guid):
-                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(SqlDataReader.GetGuid), dataIndex, property);
+                    return GetMethodCallWithCast(wasUnwrapped, dataReaderInstance, nameof(IDatabaseResultReader.GetGuid), dataIndex, property);
                 case Type _ when unwrappedTypeOrOriginal.IsEnum:
-                    return GetMethodCallWithCast(true, dataReaderInstance, nameof(SqlDataReader.GetInt32), dataIndex, property);
+                    return GetMethodCallWithCast(true, dataReaderInstance, nameof(IDatabaseResultReader.GetInt32), dataIndex, property);
                 default:
                     throw new NotSupportedException($"Type {unwrappedTypeOrOriginal.Name} is not supported.");
             }

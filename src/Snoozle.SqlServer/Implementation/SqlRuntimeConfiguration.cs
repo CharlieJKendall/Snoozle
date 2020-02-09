@@ -1,7 +1,7 @@
 ﻿using Snoozle.Abstractions;
+using Snoozle.SqlServer.Internal.Wrappers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 
 namespace Snoozle.SqlServer.Implementation
 {
@@ -11,9 +11,9 @@ namespace Snoozle.SqlServer.Implementation
         // This is created by reflection, so be careful when changing/adding parameters
         public SqlRuntimeConfiguration(
             ISqlResourceConfiguration resourceConfiguration,
-            Func<SqlDataReader, TResource> getSqlMapToResource,
-            Func<object, SqlParameter> getPrimaryKeySqlParameter,
-            Func<object, List<SqlParameter>> getNonPrimaryKeySqlParameters,
+            Func<IDatabaseResultReader, TResource> getSqlMapToResource,
+            Func<object, IDatabaseCommandParameter> getPrimaryKeySqlParameter,
+            Func<object, List<IDatabaseCommandParameter>> getNonPrimaryKeySqlParameters,
             string selectAll,
             string selectById,
             string deleteById,
@@ -31,9 +31,9 @@ namespace Snoozle.SqlServer.Implementation
             UpdateById = updateById;
         }
 
-        public Func<SqlDataReader, TResource> GetSqlMapToResource { get; }
-        public Func<object, SqlParameter> GetPrimaryKeySqlParameter { get; }
-        public Func<object, List<SqlParameter>> GetNonPrimaryKeySqlParameters { get; }
+        public Func<IDatabaseResultReader, TResource> GetSqlMapToResource { get; }
+        public Func<object, IDatabaseCommandParameter> GetPrimaryKeySqlParameter { get; }
+        public Func<object, List<IDatabaseCommandParameter>> GetNonPrimaryKeySqlParameters { get; }
         public string SelectAll { get; }
         public string SelectById { get; }
         public string DeleteById { get; }

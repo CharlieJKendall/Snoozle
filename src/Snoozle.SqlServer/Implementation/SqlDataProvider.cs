@@ -11,54 +11,54 @@ namespace Snoozle.SqlServer.Implementation
     {
         private readonly ISqlRuntimeConfigurationProvider _sqlRuntimeConfigurationProvider;
         private readonly ISqlExecutor _sqlExecutor;
-        private readonly ILogger<IDataProvider> _logger;
+        private readonly ILogger<SqlDataProvider> _logger;
 
-        public SqlDataProvider(ISqlRuntimeConfigurationProvider sqlRuntimeConfigurationProvider, ISqlExecutor sqlExecutor, ILogger<IDataProvider> logger)
+        public SqlDataProvider(ISqlRuntimeConfigurationProvider sqlRuntimeConfigurationProvider, ISqlExecutor sqlExecutor, ILogger<SqlDataProvider> logger)
         {
             _sqlRuntimeConfigurationProvider = sqlRuntimeConfigurationProvider;
             _sqlExecutor = sqlExecutor;
             _logger = logger;
         }
 
-        public async Task<bool> DeleteByIdAsync<TResource>(object primaryKey)
+        public Task<bool> DeleteByIdAsync<TResource>(object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
 
-            return await _sqlExecutor.ExecuteDeleteByIdAsync(
+            return _sqlExecutor.ExecuteDeleteByIdAsync(
                 config.DeleteById,
                 config.GetPrimaryKeySqlParameter,
                 primaryKey);
         }
 
-        public async Task<TResource> InsertAsync<TResource>(TResource resourceToCreate)
+        public Task<TResource> InsertAsync<TResource>(TResource resourceToCreate)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
 
-            return await _sqlExecutor.ExecuteInsertAsync(
+            return _sqlExecutor.ExecuteInsertAsync(
                 config.Insert,
                 config.GetNonPrimaryKeySqlParameters,
                 config.GetSqlMapToResource,
                 resourceToCreate);
         }
 
-        public async Task<IEnumerable<TResource>> SelectAllAsync<TResource>()
+        public Task<IEnumerable<TResource>> SelectAllAsync<TResource>()
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
 
-            return await _sqlExecutor.ExecuteSelectAllAsync(config.SelectAll, config.GetSqlMapToResource);
+            return _sqlExecutor.ExecuteSelectAllAsync(config.SelectAll, config.GetSqlMapToResource);
         }
 
-        public async Task<TResource> SelectByIdAsync<TResource>(object primaryKey)
+        public Task<TResource> SelectByIdAsync<TResource>(object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
 
             try
             {
-                return await _sqlExecutor.ExecuteSelectByIdAsync(
+                return _sqlExecutor.ExecuteSelectByIdAsync(
                     config.SelectById,
                     config.GetSqlMapToResource,
                     config.GetPrimaryKeySqlParameter,
@@ -72,12 +72,12 @@ namespace Snoozle.SqlServer.Implementation
             }
         }
 
-        public async Task<TResource> UpdateAsync<TResource>(TResource resourceToCreate, object primaryKey)
+        public Task<TResource> UpdateAsync<TResource>(TResource resourceToCreate, object primaryKey)
             where TResource : class, IRestResource
         {
             var config = GetConfig<TResource>();
 
-            return await _sqlExecutor.ExecuteUpdateAsync(
+            return _sqlExecutor.ExecuteUpdateAsync(
                 config.UpdateById,
                 config.GetNonPrimaryKeySqlParameters,
                 config.GetPrimaryKeySqlParameter,

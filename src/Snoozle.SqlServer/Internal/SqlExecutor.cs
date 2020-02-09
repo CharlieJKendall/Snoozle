@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
-using Snoozle.Abstractions;
 using Snoozle.SqlServer.Configuration;
+using Snoozle.SqlServer.Internal.Wrappers;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace Snoozle.SqlServer.Internal
@@ -19,64 +18,58 @@ namespace Snoozle.SqlServer.Internal
             _sqlClassProvider = sqlClassProvider;
         }
 
-        public async Task<IEnumerable<T>> ExecuteSelectAllAsync<T>(string sql, Func<SqlDataReader, T> mappingFunc)
+        public async Task<IEnumerable<T>> ExecuteSelectAllAsync<T>(string sql, Func<IDatabaseResultReader, T> mappingFunc)
             where T : class, IRestResource
         {
-            using (var connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
-            using (SqlCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
+            using (IDatabaseConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
+            using (IDatabaseCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
             {
                 await connection.OpenAsync();
-                List<T> results = new List<T>();
 
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (IDatabaseResultReader reader = await command.ExecuteReaderAsync())
                 {
+                    List<T> results = new List<T>();
+
                     while (await reader.ReadAsync())
                     {
                         results.Add(mappingFunc(reader));
                     }
-                }
 
-                return results;
+                    return results;
+                }
             }
         }
 
         public async Task<T> ExecuteSelectByIdAsync<T>(
             string sql,
-            Func<SqlDataReader, T> mappingFunc,
-            Func<object, SqlParameter> paramProvider,
+            Func<IDatabaseResultReader, T> mappingFunc,
+            Func<object, IDatabaseCommandParameter> paramProvider,
             object primaryKey)
             where T : class, IRestResource
         {
-            using (SqlConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
-            using (SqlCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
+            using (IDatabaseConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
+            using (IDatabaseCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
             {
-                command.Parameters.Add(paramProvider(primaryKey));
+                command.AddParameter(paramProvider(primaryKey));
 
                 await connection.OpenAsync();
 
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (IDatabaseResultReader reader = await command.ExecuteReaderAsync())
                 {
-                    if (await reader.ReadAsync())
-                    {
-                        return mappingFunc(reader);
-                    }
-                    else
-                    {
-                        return default(T);
-                    }
+                    return await reader.ReadAsync() ? mappingFunc(reader) : default;
                 }
             }
         }
 
         public async Task<bool> ExecuteDeleteByIdAsync(
            string sql,
-           Func<object, SqlParameter> paramProvider,
+           Func<object, IDatabaseCommandParameter> paramProvider,
            object primaryKey)
         {
-            using (SqlConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
-            using (SqlCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
+            using (IDatabaseConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
+            using (IDatabaseCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
             {
-                command.Parameters.Add(paramProvider(primaryKey));
+                command.AddParameter(paramProvider(primaryKey));
 
                 await connection.OpenAsync();
 
@@ -88,59 +81,45 @@ namespace Snoozle.SqlServer.Internal
 
         public async Task<T> ExecuteInsertAsync<T>(
             string sql,
-            Func<object, List<SqlParameter>> paramProvider,
-            Func<SqlDataReader, T> mappingFunc,
+            Func<object, List<IDatabaseCommandParameter>> paramProvider,
+            Func<IDatabaseResultReader, T> mappingFunc,
             T resourceToCreate)
             where T : class, IRestResource
         {
-            using (SqlConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
-            using (SqlCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
+            using (IDatabaseConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
+            using (IDatabaseCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
             {
-                command.Parameters.AddRange(paramProvider(resourceToCreate).ToArray());
+                command.AddParameters(paramProvider(resourceToCreate));
 
                 await connection.OpenAsync();
 
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (IDatabaseResultReader reader = await command.ExecuteReaderAsync())
                 {
-                    if (await reader.ReadAsync())
-                    {
-                        return mappingFunc(reader);
-                    }
-                    else
-                    {
-                        return default(T);
-                    }
+                    return await reader.ReadAsync() ? mappingFunc(reader) : default;
                 }
             }
         }
 
         public async Task<T> ExecuteUpdateAsync<T>(
             string sql,
-            Func<object, List<SqlParameter>> paramProvider,
-            Func<object, SqlParameter> primaryKeyParamProvider,
-            Func<SqlDataReader, T> mappingFunc,
+            Func<object, List<IDatabaseCommandParameter>> paramProvider,
+            Func<object, IDatabaseCommandParameter> primaryKeyParamProvider,
+            Func<IDatabaseResultReader, T> mappingFunc,
             T resourceToCreate,
             object primaryKey)
             where T : class, IRestResource
         {
-            using (SqlConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
-            using (SqlCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
+            using (IDatabaseConnection connection = _sqlClassProvider.CreateSqlConnection(_connectionString))
+            using (IDatabaseCommand command = _sqlClassProvider.CreateSqlCommand(sql, connection))
             {
-                command.Parameters.AddRange(paramProvider(resourceToCreate).ToArray());
-                command.Parameters.Add(primaryKeyParamProvider(primaryKey));
+                command.AddParameters(paramProvider(resourceToCreate));
+                command.AddParameter(primaryKeyParamProvider(primaryKey));
 
                 await connection.OpenAsync();
 
-                using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                using (IDatabaseResultReader reader = await command.ExecuteReaderAsync())
                 {
-                    if (await reader.ReadAsync())
-                    {
-                        return mappingFunc(reader);
-                    }
-                    else
-                    {
-                        return default(T);
-                    }
+                    return await reader.ReadAsync() ? mappingFunc(reader) : default;
                 }
             }
         }
