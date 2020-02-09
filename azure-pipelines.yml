@@ -1,5 +1,6 @@
 trigger:
 - master
+- release/*
 
 pool:
   vmImage: 'windows-latest'
@@ -8,19 +9,46 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  snoozleProject: '**/Snoozle.csproj'
+  isRelease: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+  version: '0.0.0'
 
 steps:
+- task: PowerShell@2
+  name: version
+  condition: and(succeeded(), eq(variables['isRelease'], 'True'))
+  inputs:
+    filePath: './set-version.ps1'
+
+- task: Assembly-Info-NetCore@2
+  condition: and(succeeded(), eq(variables['isRelease'], 'True'))
+  inputs:
+    Path: '$(Build.SourcesDirectory)'
+    FileNames: '**/*.csproj'
+    InsertAttributes: false
+    FileEncoding: 'auto'
+    WriteBOM: false
+    PackageRequireLicenseAcceptance: true
+    VersionNumber: $(Version)
+    FileVersionNumber: $(Version)
+    InformationalVersion: $(Version)
+    PackageVersion: $(Version)
+    LogLevel: 'verbose'
+    FailOnWarning: false
+    DisableTelemetry: false
+    
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
   inputs:
+    command: 'restore'
     restoreSolution: '$(solution)'
+    nugetConfigPath: '$(System.DefaultWorkingDirectory)/.nuget/NuGet.config'
 
-- task: VSBuild@1
+- task: DotNetCoreCLI@2
   inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
+    command: 'build'
+    projects: '**/*.sln'
     configuration: '$(buildConfiguration)'
     
 - task: DotNetCoreCLI@2
@@ -29,3 +57,19 @@ steps:
     command: test
     projects: '**/*Tests.csproj'
     publishTestResults: true
+
+- task: NuGetCommand@2
+  condition: and(succeeded(), eq(variables['isRelease'], 'True'))
+  inputs:
+    command: 'pack'
+    packagesToPack: '$(snoozleProject)'
+    versioningScheme: byEnvVar
+    versionEnvVar: $Version
+
+- task: NuGetCommand@2
+  condition: and(succeeded(), eq(variables['isRelease'], 'True'))
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'external'
+    publishFeedCredentials: 'NuGet'
