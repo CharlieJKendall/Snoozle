@@ -40,7 +40,7 @@ steps:
     DisableTelemetry: false
     
 - task: NuGetToolInstaller@1
-  displayName: 'Install NuGet'
+  displayName: 'Install NuGet.exe'
 
 - task: NuGetCommand@2
   displayName: 'Restore solution NuGet packages'
@@ -63,16 +63,16 @@ steps:
     projects: '**/*Tests.csproj'
     publishTestResults: true
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   displayName: 'Pack NuGet package'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
     command: 'pack'
     packagesToPack: '$(snoozleProject)'
     versioningScheme: byEnvVar
-    versionEnvVar: $Version
+    versionEnvVar: Version
 
-- task: NuGetCommand@2
+- task: DotNetCoreCLI@2
   displayName: 'Push NuGet package'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
