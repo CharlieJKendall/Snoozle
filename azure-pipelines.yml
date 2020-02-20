@@ -72,7 +72,7 @@ steps:
     versioningScheme: byEnvVar
     versionEnvVar: Version
 
-- task: DotNetCoreCLI@2
+- task: NuGetCommand@2
   displayName: 'Push NuGet package'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
