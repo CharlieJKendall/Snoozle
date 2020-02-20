@@ -7,6 +7,7 @@ namespace Snoozle.Abstractions
         where TRuntimeConfiguration : IRuntimeConfiguration
     {
         List<Type> TypesConfigured { get; }
+
         TRuntimeConfiguration GetRuntimeConfigurationForType(Type type);
     }
 }

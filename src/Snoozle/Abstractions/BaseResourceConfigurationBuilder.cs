@@ -7,6 +7,9 @@ using System.Reflection;
 
 namespace Snoozle.Abstractions
 {
+    /// <summary>
+    /// Provides methods for configuring a REST resource.
+    /// </summary>
     public abstract class BaseResourceConfigurationBuilder<TResource, TPropertyConfiguration, TResourceConfiguration, TModelConfiguration> : IResourceConfigurationBuilder<TPropertyConfiguration, TResourceConfiguration, TModelConfiguration>
         where TResource : class, IRestResource
         where TPropertyConfiguration : class, IPropertyConfiguration
@@ -15,27 +18,58 @@ namespace Snoozle.Abstractions
     {
         private readonly Dictionary<string, TPropertyConfiguration> _propertyConfigurations = new Dictionary<string, TPropertyConfiguration>();
 
+        /// <summary>
+        /// The property configurations for the resource.
+        /// </summary>
         public IEnumerable<TPropertyConfiguration> PropertyConfigurations => _propertyConfigurations.Values;
 
+        /// <summary>
+        /// The model configuration for the resource.
+        /// </summary>
         public TModelConfiguration ModelConfiguration { get; private set; }
 
+        /// <summary>
+        /// Override to create an instance of the custom model configuration.
+        /// </summary>
         protected abstract TModelConfiguration CreateModelConfiguration();
 
+        /// <summary>
+        /// Override to create an instance of the custom model configuration builder.
+        /// </summary>
         protected abstract IModelConfigurationBuilder<TModelConfiguration> CreateModelConfigurationBuilder();
 
+        /// <summary>
+        /// Override to create an instance of the custom property configuration.
+        /// </summary>
         protected abstract TPropertyConfiguration CreatePropertyConfiguration();
 
+        /// <summary>
+        /// Override to create an instance of the custom property configuration builder.
+        /// </summary>
         protected abstract IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration> CreatePropertyConfigurationBuilder<TProperty>(TPropertyConfiguration propertyConfiguration);
 
+        /// <summary>
+        /// Override to create an instance of the custom resource configuration.
+        /// </summary>
         protected abstract TResourceConfiguration CreateResourceConfiguration();
 
+        /// <summary>
+        /// Sets user-defined configuration for the REST resource.
+        /// </summary>
         public abstract void Configure();
 
+        /// <summary>
+        /// Creates a <see cref="IModelConfigurationBuilder{TModelConfiguration}"/> for the current REST resource.
+        /// </summary>
         public IModelConfigurationBuilder<TModelConfiguration> ConfigurationForModel()
         {
             return CreateModelConfigurationBuilder();
         }
 
+        /// <summary>
+        /// Creates a <see cref="IPropertyConfigurationBuilder{TProperty, TPropertyConfiguration}"/> for the current REST resource property.
+        /// </summary>
+        /// <param name="member">The property to configure.</param>
         public IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration> ConfigurationForProperty<TProperty>(Expression<Func<TResource, TProperty>> member)
         {
             var memberExpression = member?.Body as MemberExpression;
@@ -51,6 +85,9 @@ namespace Snoozle.Abstractions
             return CreatePropertyConfigurationBuilder<TProperty>(config);
         }
 
+        /// <summary>
+        /// Builds a <see cref="TResourceConfiguration"/> object.
+        /// </summary>
         public TResourceConfiguration BuildResourceConfiguration()
         {
             // Create default instances and apply necessary property values
@@ -70,6 +107,9 @@ namespace Snoozle.Abstractions
             return CreateResourceConfiguration();
         }
 
+        /// <summary>
+        /// Set any default values for the property configurations. This is called before the convention-based and user-defined configuration is applied.
+        /// </summary>
         protected virtual void SetPropertyConfigurationDefaults()
         {
             PropertyInfo[] properties = typeof(TResource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -89,6 +129,9 @@ namespace Snoozle.Abstractions
             }
         }
 
+        /// <summary>
+        /// Set any values for the property configurations by conventions. This is called before the user-defined and after the default configuration is applied.
+        /// </summary>
         protected virtual void SetConventionsForProperties()
         {
             TPropertyConfiguration config;
@@ -112,15 +155,24 @@ namespace Snoozle.Abstractions
             }
         }
 
+        /// <summary>
+        /// Set any default values for the model configuration. This is called before the convention-based and user-defined configuration is applied.
+        /// </summary>
         protected virtual void SetModelConfigurationDefaults()
         {
             ModelConfiguration = CreateModelConfiguration();
         }
 
+        /// <summary>
+        /// Set any values for the model configuration by conventions. This is called before the user-defined and after the default configuration is applied.
+        /// </summary>
         protected virtual void SetConventionsForModel()
         {
         }
 
+        /// <summary>
+        /// Carry out final validation after all the property configurations (default, convention, user) have been applied.
+        /// </summary>
         protected virtual void ValidateFinal()
         {
             ExceptionHelper.InvalidOperation.ThrowIfTrue(
