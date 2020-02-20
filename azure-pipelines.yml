@@ -80,3 +80,10 @@ steps:
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'external'
     publishFeedCredentials: 'NuGet'
+
+- task: PowerShell@2
+  displayName: 'Create and push Git version tag'
+  condition: and(succeeded(), eq(variables['isRelease'], 'True'))
+  inputs:
+    targetType: 'inline'
+    script: 'git tag $Env:Version; git push --tags'
