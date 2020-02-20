@@ -15,12 +15,14 @@ variables:
 
 steps:
 - task: PowerShell@2
+  displayName: 'Set build version variable'
   name: version
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
     filePath: './set-version.ps1'
 
 - task: Assembly-Info-NetCore@2
+  displayName: 'Update .csproj file versions'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
     Path: '$(Build.SourcesDirectory)'
@@ -38,18 +40,21 @@ steps:
     DisableTelemetry: false
     
 - task: NuGetToolInstaller@1
+  displayName: 'Install NuGet'
 
 - task: NuGetCommand@2
+  displayName: 'Restore solution NuGet packages'
   inputs:
     command: 'restore'
     restoreSolution: '$(solution)'
     nugetConfigPath: '$(System.DefaultWorkingDirectory)/.nuget/NuGet.config'
 
 - task: DotNetCoreCLI@2
+  displayName: 'Build solution'
   inputs:
     command: 'build'
     projects: '**/*.sln'
-    configuration: '$(buildConfiguration)'
+    arguments: '--configuration $(buildConfiguration)'
     
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests'
@@ -59,6 +64,7 @@ steps:
     publishTestResults: true
 
 - task: NuGetCommand@2
+  displayName: 'Pack NuGet package'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
     command: 'pack'
@@ -67,6 +73,7 @@ steps:
     versionEnvVar: $Version
 
 - task: NuGetCommand@2
+  displayName: 'Push NuGet package'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
     command: 'push'

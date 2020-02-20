@@ -7,8 +7,11 @@ using System.Linq.Expressions;
 
 namespace Snoozle.Expressions
 {
-    public static class ExpressionBuilder
+    internal static class ExpressionBuilder
     {
+        /// <summary>
+        /// Creates a func that returns the primary key value given a resource object.
+        /// </summary>
         public static Func<object, object> GetPrimaryKeyValueFunc<TResource, TPropertyConfiguration, TModelConfiguration>(
             IResourceConfiguration<TPropertyConfiguration, TModelConfiguration> config)
             where TResource : class, IRestResource
@@ -27,6 +30,9 @@ namespace Snoozle.Expressions
             return lambda.Compile();
         }
 
+        /// <summary>
+        /// Creates a <see cref="ValueComputationActionModel"/> for a given property.
+        /// </summary>
         public static IEnumerable<ValueComputationActionModel> GetComputedValueAction<TResource, TPropertyConfiguration, TModelConfiguration>(
             IResourceConfiguration<TPropertyConfiguration, TModelConfiguration> resourceConfiguration)
             where TResource : class, IRestResource
@@ -44,8 +50,8 @@ namespace Snoozle.Expressions
             {
                 var property = Expression.Property(assignTyped, configs[i].PropertyName);
                 var assignProperty = Expression.Assign(
-                        Expression.MakeMemberAccess(assignTyped, property.Member),
-                        Expression.Convert(configs[i].ValueComputationFunc.ValueComputationFunc.Body, property.Type));
+                    Expression.MakeMemberAccess(assignTyped, property.Member),
+                    Expression.Convert(configs[i].ValueComputationFunc.ValueComputationFunc.Body, property.Type));
 
 
                 var lambda = Expression.Lambda<Action<object>>(

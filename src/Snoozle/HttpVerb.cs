@@ -2,6 +2,9 @@
 
 namespace Snoozle
 {
+    /// <summary>
+    /// The HTTP method verbs that Snoozle supports.
+    /// </summary>
     [Flags]
     public enum HttpVerb
     {
