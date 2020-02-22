@@ -35,7 +35,7 @@ namespace Snoozle.Core
         [HttpPost]
         public async Task<ActionResult<TResource>> Post([FromBody] TResource resourceToCreate)
         {
-            if (MethodIsDisallowed(HttpVerb.POST))
+            if (MethodIsDisallowed(HttpVerbs.POST))
             {
                 return MethodNotAllowed();
             }
@@ -45,7 +45,7 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            ApplyComputedValues(resourceToCreate, HttpVerb.POST);
+            ApplyComputedValues(resourceToCreate, HttpVerbs.POST);
 
             try
             {
@@ -63,7 +63,7 @@ namespace Snoozle.Core
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TResource>>> GetAll()
         {
-            if (MethodIsDisallowed(HttpVerb.GET))
+            if (MethodIsDisallowed(HttpVerbs.GET))
             {
                 return MethodNotAllowed();
             }
@@ -84,7 +84,7 @@ namespace Snoozle.Core
         [HttpGet("{id}")]
         public async Task<ActionResult<TResource>> GetById(string id)
         {
-            if (MethodIsDisallowed(HttpVerb.GET))
+            if (MethodIsDisallowed(HttpVerbs.GET))
             {
                 return MethodNotAllowed();
             }
@@ -110,7 +110,7 @@ namespace Snoozle.Core
         [HttpPut("{id}")]
         public async Task<ActionResult<TResource>> Put(string id, [FromBody] TResource resourceToUpdate)
         {
-            if (MethodIsDisallowed(HttpVerb.PUT))
+            if (MethodIsDisallowed(HttpVerbs.PUT))
             {
                 return MethodNotAllowed();
             }
@@ -120,7 +120,7 @@ namespace Snoozle.Core
                 return BadRequest();
             }
 
-            ApplyComputedValues(resourceToUpdate, HttpVerb.PUT);
+            ApplyComputedValues(resourceToUpdate, HttpVerbs.PUT);
 
             try
             {
@@ -143,7 +143,7 @@ namespace Snoozle.Core
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id)
         {
-            if (MethodIsDisallowed(HttpVerb.DELETE))
+            if (MethodIsDisallowed(HttpVerbs.DELETE))
             {
                 return MethodNotAllowed();
             }
@@ -175,7 +175,7 @@ namespace Snoozle.Core
             return StatusCode((int)HttpStatusCode.MethodNotAllowed);
         }
 
-        private bool MethodIsDisallowed(HttpVerb httpVerb)
+        private bool MethodIsDisallowed(HttpVerbs httpVerb)
         {
             var disallowedGlobally = (_options.AllowedVerbs & httpVerb) != httpVerb;
             var disallowedOnResource = (_runtimeConfiguration.AllowedVerbsFlags & httpVerb) != httpVerb;
@@ -183,7 +183,7 @@ namespace Snoozle.Core
             return disallowedGlobally || disallowedOnResource;
         }
 
-        private void ApplyComputedValues(TResource resource, HttpVerb httpVerb)
+        private void ApplyComputedValues(TResource resource, HttpVerbs httpVerb)
         {
             foreach (ValueComputationActionModel action in _runtimeConfiguration.ValueComputationActions)
             {

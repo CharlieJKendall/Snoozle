@@ -5,7 +5,7 @@
     {
         TModelConfiguration ModelConfiguration { get; }
 
-        IModelConfigurationBuilder<TModelConfiguration> HasAllowedHttpVerbs(HttpVerb allowedVerbsFlags);
+        IModelConfigurationBuilder<TModelConfiguration> HasAllowedHttpVerbs(HttpVerbs allowedVerbsFlags);
 
         IModelConfigurationBuilder<TModelConfiguration> HasRoute(string route);
     }

@@ -8,7 +8,7 @@ namespace Snoozle.Abstractions
     {
         Func<object, object> GetPrimaryKeyValue { get; }
 
-        HttpVerb AllowedVerbsFlags { get; }
+        HttpVerbs AllowedVerbsFlags { get; }
 
         string Route { get; }
 

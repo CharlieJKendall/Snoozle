@@ -4,6 +4,6 @@
     {
         string Route { get; set; }
 
-        HttpVerb AllowedVerbsFlags { get; set; }
+        HttpVerbs AllowedVerbsFlags { get; set; }
     }
 }

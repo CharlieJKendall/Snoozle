@@ -21,7 +21,7 @@ namespace Snoozle.Abstractions
         /// <summary>
         /// The allowed HTTP method verbs for this resource.
         /// </summary>
-        public HttpVerb AllowedVerbsFlags { get; }
+        public HttpVerbs AllowedVerbsFlags { get; }
 
         /// <summary>
         /// The API route that the resource can be accessed at.

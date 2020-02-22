@@ -33,8 +33,8 @@ namespace Snoozle.Abstractions
         /// Sets the HTTP verbs that can be used to access this model.
         /// </summary>
         /// <param name="allowedVerbsFlags">The allowed verbs for this model, i.e HttpVerb.GET | HttpVerb.POST</param>
-        /// <remarks><see cref="HttpVerb"/> is decorated with the <see cref="FlagsAttribute"/> attribute.</remarks>
-        public IModelConfigurationBuilder<TModelConfiguration> HasAllowedHttpVerbs(HttpVerb allowedVerbsFlags)
+        /// <remarks><see cref="HttpVerbs"/> is decorated with the <see cref="FlagsAttribute"/> attribute.</remarks>
+        public IModelConfigurationBuilder<TModelConfiguration> HasAllowedHttpVerbs(HttpVerbs allowedVerbsFlags)
         {
             ModelConfiguration.AllowedVerbsFlags = allowedVerbsFlags;
             return this;

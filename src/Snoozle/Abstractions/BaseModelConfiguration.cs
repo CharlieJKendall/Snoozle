@@ -16,7 +16,7 @@
         /// <summary>
         /// The HTTP verbs that can be used when accessing the specified resource.
         /// </summary>
-        /// <remarks>Defaults to <see cref="HttpVerb.All"/>.</remarks>
-        public HttpVerb AllowedVerbsFlags { get; set; } = HttpVerb.All;
+        /// <remarks>Defaults to <see cref="HttpVerbs.All"/>.</remarks>
+        public HttpVerbs AllowedVerbsFlags { get; set; } = HttpVerbs.All;
     }
 }

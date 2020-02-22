@@ -13,7 +13,7 @@ namespace Snoozle.Abstractions.Models
         /// </summary>
         /// <param name="valueComputationFunc">The func used to generate the value.</param>
         /// <param name="endpointTriggers">The HTTP method verbs that will trigger the computation.</param>
-        public ValueComputationFuncModel(Expression<Func<object>> valueComputationFunc, HttpVerb endpointTriggers)
+        public ValueComputationFuncModel(Expression<Func<object>> valueComputationFunc, HttpVerbs endpointTriggers)
         {
             ValueComputationFunc = valueComputationFunc;
             EndpointTriggers = endpointTriggers;
@@ -27,6 +27,6 @@ namespace Snoozle.Abstractions.Models
         /// <summary>
         /// The HTTP method verbs that will trigger the computation.
         /// </summary>
-        public HttpVerb EndpointTriggers { get; set; } = HttpVerb.POST | HttpVerb.PUT;
+        public HttpVerbs EndpointTriggers { get; set; } = HttpVerbs.POST | HttpVerbs.PUT;
     }
 }

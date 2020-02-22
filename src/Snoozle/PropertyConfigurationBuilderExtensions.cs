@@ -17,7 +17,7 @@ namespace Snoozle
         /// <returns>The property configuration builder instance.</returns>
         public static IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration> DateTimeNow<TPropertyConfiguration>(
             this IComputedValueBuilder<DateTime, TPropertyConfiguration> builder,
-            HttpVerb endpointTriggers = HttpVerb.POST | HttpVerb.PUT)
+            HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
             where TPropertyConfiguration : IPropertyConfiguration
         {
             builder.PropertyConfiguration.ValueComputationFunc = new ValueComputationFuncModel(() => DateTime.Now, endpointTriggers);
@@ -35,7 +35,7 @@ namespace Snoozle
         public static IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration> DateTimeUtcNow<TPropertyConfiguration>(
             this IComputedValueBuilder<DateTime,
                 TPropertyConfiguration> builder,
-                HttpVerb endpointTriggers = HttpVerb.POST | HttpVerb.PUT)
+                HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
             where TPropertyConfiguration : IPropertyConfiguration
         {
             builder.PropertyConfiguration.ValueComputationFunc = new ValueComputationFuncModel(() => DateTime.UtcNow, endpointTriggers);
@@ -55,7 +55,7 @@ namespace Snoozle
         public static IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration> Custom<TProperty, TPropertyConfiguration>(
             this IComputedValueBuilder<TProperty, TPropertyConfiguration> builder,
             Expression<Func<object>> computationFunc,
-            HttpVerb endpointTriggers = HttpVerb.POST | HttpVerb.PUT)
+            HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
            where TPropertyConfiguration : IPropertyConfiguration
         {
             ExceptionHelper.Argument.ThrowIfTrue(

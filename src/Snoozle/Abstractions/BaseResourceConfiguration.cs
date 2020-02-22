@@ -39,7 +39,7 @@ namespace Snoozle.Abstractions
         /// <summary>
         /// Allowed HTTP method verbs for the resource. This overrides the globally configured verbs.
         /// </summary>
-        public HttpVerb AllowedVerbsFlags => ModelConfiguration.AllowedVerbsFlags;
+        public HttpVerbs AllowedVerbsFlags => ModelConfiguration.AllowedVerbsFlags;
 
         /// <summary>
         /// The API route that the resource can be accessed at.

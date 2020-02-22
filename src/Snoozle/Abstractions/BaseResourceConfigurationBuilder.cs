@@ -175,9 +175,11 @@ namespace Snoozle.Abstractions
         /// </summary>
         protected virtual void ValidateFinal()
         {
+            IEnumerable<TPropertyConfiguration> primaryIdentifiers = _propertyConfigurations.Values.Where(prop => prop.IsPrimaryResourceIdentifier);
             ExceptionHelper.InvalidOperation.ThrowIfTrue(
-                _propertyConfigurations.Values.Count(prop => prop.IsPrimaryResourceIdentifier) > 1,
-                "There must be a maximum of 1 property marked as the primary identifier.");
+                primaryIdentifiers.Count() > 1,
+                $"There must be a maximum of 1 property marked as the primary identifier for {nameof(TResource)}. " +
+                $"Currently: {string.Join(", ", primaryIdentifiers.Select(x => x.PropertyName))}");
         }
     }
 }

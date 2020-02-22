@@ -12,7 +12,7 @@ namespace Snoozle.Abstractions.Models
         /// </summary>
         /// <param name="valueComputationAction">The action to apply to the property.</param>
         /// <param name="endpointTriggers">The HTTP method verbs that will trigger the action.</param>
-        public ValueComputationActionModel(Action<object> valueComputationAction, HttpVerb endpointTriggers)
+        public ValueComputationActionModel(Action<object> valueComputationAction, HttpVerbs endpointTriggers)
         {
             ValueComputationAction = valueComputationAction;
             EndpointTriggers = endpointTriggers;
@@ -26,6 +26,6 @@ namespace Snoozle.Abstractions.Models
         /// <summary>
         /// The HTTP method verbs that will trigger the action.
         /// </summary>
-        public HttpVerb EndpointTriggers { get; set; } = HttpVerb.POST | HttpVerb.PUT;
+        public HttpVerbs EndpointTriggers { get; set; } = HttpVerbs.POST | HttpVerbs.PUT;
     }
 }

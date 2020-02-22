@@ -11,7 +11,7 @@ namespace Snoozle.Abstractions
 
         IEnumerable<TPropertyConfiguration> AllPropertyConfigurations { get; }
 
-        HttpVerb AllowedVerbsFlags { get; }
+        HttpVerbs AllowedVerbsFlags { get; }
 
         IEnumerable<TPropertyConfiguration> PropertyConfigurationsForRead { get; }
 

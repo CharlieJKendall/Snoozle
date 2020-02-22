@@ -6,7 +6,7 @@ namespace Snoozle
     /// The HTTP method verbs that Snoozle supports.
     /// </summary>
     [Flags]
-    public enum HttpVerb
+    public enum HttpVerbs
     {
         None        = 0,
         GET         = 1,
