@@ -1,10 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;netcoreapp2.2</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Snoozle</PackageId>
-    <Version>0.0.0</Version>
     <Authors>Charlie Kendall</Authors>
     <Copyright>Copyright (c) Charlie Kendall 2020</Copyright>
     <Title>Snoozle - Build C# REST APIs</Title>
@@ -12,6 +11,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>GPL-3.0-only</PackageLicenseExpression>
     <PackageTags>REST;API;Fluent;Snoozle;C#;HTTP</PackageTags>
+    <RepositoryUrl>https://github.com/CharlieJKendall/Snoozle</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
