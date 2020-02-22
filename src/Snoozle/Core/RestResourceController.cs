@@ -49,7 +49,7 @@ namespace Snoozle.Core
 
             try
             {
-                TResource resourceCreated = await _dataProvider.InsertAsync(resourceToCreate);
+                TResource resourceCreated = await _dataProvider.InsertAsync(resourceToCreate).ConfigureAwait(false);
 
                 return Ok(resourceCreated);
             }
@@ -70,7 +70,7 @@ namespace Snoozle.Core
 
             try
             {
-                IEnumerable<TResource> results = await _dataProvider.SelectAllAsync<TResource>();
+                IEnumerable<TResource> results = await _dataProvider.SelectAllAsync<TResource>().ConfigureAwait(false);
 
                 return Ok(results);
             }
@@ -91,7 +91,7 @@ namespace Snoozle.Core
 
             try
             {
-                TResource result = await _dataProvider.SelectByIdAsync<TResource>(id);
+                TResource result = await _dataProvider.SelectByIdAsync<TResource>(id).ConfigureAwait(false);
 
                 if (result == null)
                 {
@@ -124,7 +124,7 @@ namespace Snoozle.Core
 
             try
             {
-                TResource resourceUpdated = await _dataProvider.UpdateAsync(resourceToUpdate, id);
+                TResource resourceUpdated = await _dataProvider.UpdateAsync(resourceToUpdate, id).ConfigureAwait(false);
 
                 if (resourceUpdated == null)
                 {
@@ -150,7 +150,7 @@ namespace Snoozle.Core
 
             try
             {
-                bool success = await _dataProvider.DeleteByIdAsync<TResource>(id);
+                bool success = await _dataProvider.DeleteByIdAsync<TResource>(id).ConfigureAwait(false);
 
                 if (success)
                 {

@@ -86,7 +86,7 @@ namespace Snoozle.Abstractions
         }
 
         /// <summary>
-        /// Builds a <see cref="TResourceConfiguration"/> object.
+        /// Builds a <see cref="IResourceConfiguration{TPropertyConfiguration, TModelConfiguration}"/> object.
         /// </summary>
         public TResourceConfiguration BuildResourceConfiguration()
         {

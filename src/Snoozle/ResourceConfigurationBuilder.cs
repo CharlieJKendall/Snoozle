@@ -11,9 +11,9 @@ namespace Snoozle
         /// Builds all the resource configurations for a given type.
         /// </summary>
         /// <typeparam name="TPropertyConfiguration">The interface derived from <see cref="IPropertyConfiguration"/>.</typeparam>
-        /// <typeparam name="TResourceConfiguration">The interface derived from <see cref="IResourceConfiguration<>"/>.</typeparam>
+        /// <typeparam name="TResourceConfiguration">The interface derived from <see cref="IResourceConfiguration{TPropertyConfiguration, TModelConfiguration}"/>.</typeparam>
         /// <typeparam name="TModelConfiguration">The interface derived from <see cref="IModelConfiguration"/>.</typeparam>
-        /// <param name="resourceConfigurationBuilderType">The type that implements <see cref="BaseResourceConfigurationBuilder<>"/>.</param>
+        /// <param name="resourceConfigurationBuilderType">The type that implements <see cref="BaseResourceConfigurationBuilder{TResource, TPropertyConfiguration, TResourceConfiguration, TModelConfiguration}"/>.</param>
         /// <returns>Returns a single configuration for each rest resource defined.</returns>
         public static IEnumerable<TResourceConfiguration> Build<TPropertyConfiguration, TResourceConfiguration, TModelConfiguration>(Type resourceConfigurationBuilderType)
             where TPropertyConfiguration : class, IPropertyConfiguration
