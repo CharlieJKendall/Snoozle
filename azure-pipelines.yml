@@ -81,9 +81,11 @@ steps:
     nuGetFeedType: 'external'
     publishFeedCredentials: 'NuGet'
 
-- task: PowerShell@2
-  displayName: 'Create and push Git version tag'
+- task: GithubRelease@0
+  displayName: 'Create GitHub Release'
   condition: and(succeeded(), eq(variables['isRelease'], 'True'))
   inputs:
-    targetType: 'inline'
-    script: 'git tag $Env:Version; git push --tags'
+    gitHubConnection: CharlieJKendallPAT
+    repositoryName: CharlieJKendall/Snoozle
+    tagSource: manual
+    tag: $(Version)
