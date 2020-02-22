@@ -5,3 +5,5 @@
 [![Latest Release](https://img.shields.io/github/v/release/charliejkendall/snoozle)](https://github.com/CharlieJKendall/Snoozle/releases/latest)
 
 Quickly and easily build REST APIs in C# using simple POCO models representing your data schema and an easy-to-use fluent configuration builder.
+
+See the demos and quickstarts at https://github.com/CharlieJKendall/SnoozleDemos to get up and running faster.
