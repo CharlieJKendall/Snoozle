@@ -3,15 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29728.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.TestHarness", "Snoozle.TestHarness\Snoozle.TestHarness.csproj", "{8790A238-7890-4493-B1B5-E630B9B20AA7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle", "Snoozle\Snoozle.csproj", "{CF21C65A-27D0-4063-B424-3AB7B45F86C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.SqlServer", "Snoozle.SqlServer\Snoozle.SqlServer.csproj", "{550E2F09-D521-418E-903A-ABE6F3769293}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle.SqlServer.Tests", "Snoozle.SqlServer.Tests\Snoozle.SqlServer.Tests.csproj", "{A08B9FA8-DE8D-439A-9F49-65E7090ED7C4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle.Tests", "Snoozle.Tests\Snoozle.Tests.csproj", "{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.Tests", "Snoozle.Tests\Snoozle.Tests.csproj", "{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,22 +13,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8790A238-7890-4493-B1B5-E630B9B20AA7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF21C65A-27D0-4063-B424-3AB7B45F86C4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{550E2F09-D521-418E-903A-ABE6F3769293}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{550E2F09-D521-418E-903A-ABE6F3769293}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{550E2F09-D521-418E-903A-ABE6F3769293}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{550E2F09-D521-418E-903A-ABE6F3769293}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A08B9FA8-DE8D-439A-9F49-65E7090ED7C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A08B9FA8-DE8D-439A-9F49-65E7090ED7C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A08B9FA8-DE8D-439A-9F49-65E7090ED7C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A08B9FA8-DE8D-439A-9F49-65E7090ED7C4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Release|Any CPU.ActiveCfg = Release|Any CPU

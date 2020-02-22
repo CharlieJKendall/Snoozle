@@ -9,7 +9,7 @@ namespace Snoozle.Core
     {
         private readonly Dictionary<Type, string> _routes;
 
-        public RestResourceControllerModelConvention(Dictionary<Type, string> routes)
+        internal RestResourceControllerModelConvention(Dictionary<Type, string> routes)
         {
             _routes = routes;
         }
