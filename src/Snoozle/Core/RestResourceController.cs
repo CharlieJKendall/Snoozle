@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace Snoozle.Core
 {
     [Route("api/[controller]")]
+    [ApiController]
     public sealed class RestResourceController<TResource> : ControllerBase
         where TResource : class, IRestResource
     {

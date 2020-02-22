@@ -134,24 +134,21 @@ namespace Snoozle.Abstractions
         /// </summary>
         protected virtual void SetConventionsForProperties()
         {
-            TPropertyConfiguration config;
+            var resourceIdName = typeof(TResource).Name.ToLowerInvariant() + "id";
+            var resourceIdPropertyConfig = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == resourceIdName).Value;
+            var idPropertyConfig = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == "id").Value;
 
-            // Set column called [resource_type_name]Id to primary identifier (i.e. Person -> PersonId)
-            var idPropName = typeof(TResource).Name.ToLowerInvariant() + "id";
-            config = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == idPropName).Value;
-
-            if (config != null)
+            if (idPropertyConfig != null)
             {
-                config.IsPrimaryResourceIdentifier = true;
+                // Set column called Id to primary identifier
+                idPropertyConfig.IsPrimaryResourceIdentifier = true;
+                idPropertyConfig.IsReadOnly = true;
             }
-
-            // Set column called Id to primary identifier
-            config = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == "id").Value;
-
-            if (config != null)
+            else if (resourceIdPropertyConfig != null)
             {
-                _propertyConfigurations.Values.ToList().ForEach(prop => prop.IsPrimaryResourceIdentifier = false);
-                config.IsPrimaryResourceIdentifier = true;
+                // Set column called [resource_type_name]Id to primary identifier (i.e. Person -> PersonId)
+                resourceIdPropertyConfig.IsPrimaryResourceIdentifier = true;
+                resourceIdPropertyConfig.IsReadOnly = true;
             }
         }
 
