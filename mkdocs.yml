@@ -1,7 +1,9 @@
 site_name: Snoozle
-repo_url: https://github.com/charliejkendall/snoozle
+repo_url: https://github.com/CharlieJKendall/Snoozle
 repo_name: GitHub
-edit_uri: docs/
 site_description: Documentation for Snoozle
 site_author: Charlie Kendall
 copyright: Copyright (c) Charlie Kendall 2020
+nav:
+    - Home: index.md
+theme: readthedocs
