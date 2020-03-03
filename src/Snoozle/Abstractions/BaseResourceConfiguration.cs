@@ -32,9 +32,16 @@ namespace Snoozle.Abstractions
         public TPropertyConfiguration PrimaryIdentifier => AllPropertyConfigurations.Single(prop => prop.IsPrimaryResourceIdentifier);
 
         /// <summary>
-        /// All property configurations for values to be updated during read operations.
+        /// All property configurations for values to be set during creation operations.
         /// </summary>
-        public IEnumerable<TPropertyConfiguration> PropertyConfigurationsForWrite => AllPropertyConfigurations.OrderBy(prop => prop.Index).Where(prop => !prop.IsReadOnly);
+        public IEnumerable<TPropertyConfiguration> PropertyConfigurationsForCreate => AllPropertyConfigurations.OrderBy(prop => prop.Index).Where(prop => !prop.IsReadOnly);
+
+
+        /// <summary>
+        /// All property configurations for values to be set during update operations.
+        /// </summary>
+        public IEnumerable<TPropertyConfiguration> PropertyConfigurationsForUpdate =>
+            PropertyConfigurationsForCreate.Where(x => (!x.HasComputedValue || x.ValueComputationFunc.HasEndpointTrigger(HttpVerbs.PUT)) && !x.IsPrimaryResourceIdentifier);
 
         /// <summary>
         /// Allowed HTTP method verbs for the resource. This overrides the globally configured verbs.

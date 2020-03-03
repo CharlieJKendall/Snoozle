@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Snoozle.InMemory", "Snoozle.InMemory\Snoozle.InMemory.csproj", "{FEDD6BE5-DD8B-4F44-A11E-C4772711F08F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Snoozle.TestHarness", "Snoozle.TestHarness\Snoozle.TestHarness.csproj", "{EBE8103F-AF97-401B-BF87-557E542FD4B7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +30,14 @@ Global
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCBD46EC-BBB7-46B3-A1D7-D666D55FD897}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEDD6BE5-DD8B-4F44-A11E-C4772711F08F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEDD6BE5-DD8B-4F44-A11E-C4772711F08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEDD6BE5-DD8B-4F44-A11E-C4772711F08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEDD6BE5-DD8B-4F44-A11E-C4772711F08F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBE8103F-AF97-401B-BF87-557E542FD4B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBE8103F-AF97-401B-BF87-557E542FD4B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBE8103F-AF97-401B-BF87-557E542FD4B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBE8103F-AF97-401B-BF87-557E542FD4B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

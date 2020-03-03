@@ -11,22 +11,22 @@ namespace Snoozle.Abstractions.Models
         /// <summary>
         /// Initialises a new instance of the <see cref="ValueComputationFuncModel"/> class.
         /// </summary>
-        /// <param name="valueComputationFunc">The func used to generate the value.</param>
         /// <param name="endpointTriggers">The HTTP method verbs that will trigger the computation.</param>
-        public ValueComputationFuncModel(Expression<Func<object>> valueComputationFunc, HttpVerbs endpointTriggers)
+        public ValueComputationFuncModel(HttpVerbs endpointTriggers)
         {
-            ValueComputationFunc = valueComputationFunc;
             EndpointTriggers = endpointTriggers;
         }
 
         /// <summary>
         /// The func to generate the property value.
         /// </summary>
-        public Expression<Func<object>> ValueComputationFunc { get; set; } = null;
+        public Expression<Func<object>> ValueComputationFunc { get; set; }
 
         /// <summary>
         /// The HTTP method verbs that will trigger the computation.
         /// </summary>
         public HttpVerbs EndpointTriggers { get; set; } = HttpVerbs.POST | HttpVerbs.PUT;
+
+        public bool HasEndpointTrigger(HttpVerbs flag) => EndpointTriggers.HasFlag(flag);
     }
 }

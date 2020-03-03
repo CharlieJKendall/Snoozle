@@ -1,6 +1,4 @@
 ﻿using Snoozle.Abstractions;
-using Snoozle.Abstractions.Models;
-using Snoozle.Exceptions;
 using System;
 using System.Linq.Expressions;
 
@@ -13,14 +11,12 @@ namespace Snoozle
         /// </summary>
         /// <typeparam name="TPropertyConfiguration">The type of the property configuration.</typeparam>
         /// <param name="builder">The property configuration builder instance.</param>
-        /// <param name="endpointTriggers">The endpoints that will trigger this computed value.</param>
         /// <returns>The property configuration builder instance.</returns>
         public static IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration> DateTimeNow<TPropertyConfiguration>(
-            this IComputedValueBuilder<DateTime, TPropertyConfiguration> builder,
-            HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
+            this IComputedValueBuilder<DateTime, TPropertyConfiguration> builder)
             where TPropertyConfiguration : IPropertyConfiguration
         {
-            builder.PropertyConfiguration.ValueComputationFunc = new ValueComputationFuncModel(() => DateTime.Now, endpointTriggers);
+            builder.PropertyConfiguration.ValueComputationFunc.ValueComputationFunc = () => DateTime.Now;
 
             return builder as IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration>;
         }
@@ -30,15 +26,13 @@ namespace Snoozle
         /// </summary>
         /// <typeparam name="TPropertyConfiguration">The type of the property configuration.</typeparam>
         /// <param name="builder">The property configuration builder instance.</param>
-        /// <param name="endpointTriggers">The endpoints that will trigger this computed value.</param>
         /// <returns>The property configuration builder instance.</returns>
         public static IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration> DateTimeUtcNow<TPropertyConfiguration>(
             this IComputedValueBuilder<DateTime,
-                TPropertyConfiguration> builder,
-                HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
+                TPropertyConfiguration> builder)
             where TPropertyConfiguration : IPropertyConfiguration
         {
-            builder.PropertyConfiguration.ValueComputationFunc = new ValueComputationFuncModel(() => DateTime.UtcNow, endpointTriggers);
+            builder.PropertyConfiguration.ValueComputationFunc.ValueComputationFunc = () => DateTime.UtcNow;
 
             return builder as IPropertyConfigurationBuilder<DateTime, TPropertyConfiguration>;
         }
@@ -50,22 +44,19 @@ namespace Snoozle
         /// <typeparam name="TPropertyConfiguration">The type of the property configuration.</typeparam>
         /// <param name="builder">The property configuration builder instance.</param>
         /// <param name="computationFunc">The func to apply to the property to generate the value that will be persisted.</param>
-        /// <param name="endpointTriggers">The endpoints that will trigger this computed value.</param>
         /// <returns>The property configuration builder instance.</returns>
         public static IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration> Custom<TProperty, TPropertyConfiguration>(
             this IComputedValueBuilder<TProperty, TPropertyConfiguration> builder,
-            Expression<Func<object>> computationFunc,
-            HttpVerbs endpointTriggers = HttpVerbs.POST | HttpVerbs.PUT)
+            Expression<Func<TProperty>> computationFunc)
            where TPropertyConfiguration : IPropertyConfiguration
         {
-            ExceptionHelper.Argument.ThrowIfTrue(
-                computationFunc.Body.Type != typeof(TProperty),
-                $"Computation Func return type must match property type ({typeof(TProperty).Name}).",
-                nameof(computationFunc));
+            builder.PropertyConfiguration.ValueComputationFunc.ValueComputationFunc = Expression.Lambda<Func<object>>(Expression.Convert(computationFunc.Body, typeof(object)));
 
-            builder.PropertyConfiguration.ValueComputationFunc = new ValueComputationFuncModel(computationFunc, endpointTriggers); ;
+            // Any property that has a computed value is by definition not read-only, so explicitly enforce this
+            var propertyBuilder = builder as IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration>;
+            propertyBuilder.IsReadOnly(false);
 
-            return builder as IPropertyConfigurationBuilder<TProperty, TPropertyConfiguration>;
+            return propertyBuilder;
         }
     }
 }

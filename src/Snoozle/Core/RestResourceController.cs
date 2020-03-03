@@ -178,8 +178,8 @@ namespace Snoozle.Core
 
         private bool MethodIsDisallowed(HttpVerbs httpVerb)
         {
-            var disallowedGlobally = (_options.AllowedVerbs & httpVerb) != httpVerb;
-            var disallowedOnResource = (_runtimeConfiguration.AllowedVerbsFlags & httpVerb) != httpVerb;
+            var disallowedGlobally = !_options.AllowedVerbs.HasFlag(httpVerb);
+            var disallowedOnResource = !_runtimeConfiguration.AllowedVerbsFlags.HasFlag(httpVerb);
 
             return disallowedGlobally || disallowedOnResource;
         }
@@ -190,7 +190,7 @@ namespace Snoozle.Core
             {
                 // Only apply the computed value if the user has specified that it is to be applied for the given HTTP verb
                 // i.e. some values are only updated for POST (e.g. DateCreated)
-                if ((action.EndpointTriggers & httpVerb) == httpVerb)
+                if (action.EndpointTriggers.HasFlag(httpVerb))
                 {
                     action.ValueComputationAction(resource);
                 }

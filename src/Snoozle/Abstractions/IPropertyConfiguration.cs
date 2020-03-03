@@ -17,5 +17,9 @@ namespace Snoozle.Abstractions
         bool IsPrimaryResourceIdentifier { get; set; }
 
         ValueComputationFuncModel ValueComputationFunc { get; set; }
+
+        bool HasComputedValue { get; }
+
+        bool HasComputationEndpointTrigger(HttpVerbs endpoint);
     }
 }

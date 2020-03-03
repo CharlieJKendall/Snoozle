@@ -17,7 +17,9 @@ namespace Snoozle.Abstractions
 
         TPropertyConfiguration PrimaryIdentifier { get; }
 
-        IEnumerable<TPropertyConfiguration> PropertyConfigurationsForWrite { get; }
+        IEnumerable<TPropertyConfiguration> PropertyConfigurationsForCreate { get; }
+
+        IEnumerable<TPropertyConfiguration> PropertyConfigurationsForUpdate { get; }
 
         string Route { get; }
 

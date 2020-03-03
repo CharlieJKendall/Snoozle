@@ -172,11 +172,15 @@ namespace Snoozle.Abstractions
         /// </summary>
         protected virtual void ValidateFinal()
         {
-            IEnumerable<TPropertyConfiguration> primaryIdentifiers = _propertyConfigurations.Values.Where(prop => prop.IsPrimaryResourceIdentifier);
+            IEnumerable<TPropertyConfiguration> primaryIdentifiers = PropertyConfigurations.Where(prop => prop.IsPrimaryResourceIdentifier);
             ExceptionHelper.InvalidOperation.ThrowIfTrue(
-                primaryIdentifiers.Count() > 1,
-                $"There must be a maximum of 1 property marked as the primary identifier for {nameof(TResource)}. " +
+                primaryIdentifiers.Count() != 1,
+                $"There must be exactly of 1 property marked as the primary identifier for {typeof(TResource).Name}. " +
                 $"Currently: {string.Join(", ", primaryIdentifiers.Select(x => x.PropertyName))}");
+
+            ExceptionHelper.InvalidOperation.ThrowIfTrue(
+                primaryIdentifiers.First().HasComputedValue && primaryIdentifiers.First().ValueComputationFunc.EndpointTriggers.HasFlag(HttpVerbs.PUT),
+                $"The primary identifier for {typeof(TResource).Name} must not be updatable via PUT.");
         }
     }
 }

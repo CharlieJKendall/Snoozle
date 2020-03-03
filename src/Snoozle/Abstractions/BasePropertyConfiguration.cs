@@ -40,5 +40,9 @@ namespace Snoozle.Abstractions
         /// A Func to be applied to the property during write operations.
         /// </summary>
         public ValueComputationFuncModel ValueComputationFunc { get; set; } = null;
+
+        public bool HasComputedValue => ValueComputationFunc != null;
+
+        public bool HasComputationEndpointTrigger(HttpVerbs endpoint) => (ValueComputationFunc?.EndpointTriggers & endpoint) == endpoint;
     }
 }

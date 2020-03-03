@@ -39,7 +39,7 @@ namespace Snoozle.Expressions
             where TPropertyConfiguration : class, IPropertyConfiguration
             where TModelConfiguration : class, IModelConfiguration
         {
-            TPropertyConfiguration[] configs = resourceConfiguration.PropertyConfigurationsForWrite.Where(c => c.ValueComputationFunc != null).ToArray();
+            TPropertyConfiguration[] configs = resourceConfiguration.AllPropertyConfigurations.Where(c => c.ValueComputationFunc != null).ToArray();
 
             var paramResource = Expression.Parameter(typeof(object), "resourceObject");
             var typedResource = Expression.Variable(typeof(TResource), "typedResource");
