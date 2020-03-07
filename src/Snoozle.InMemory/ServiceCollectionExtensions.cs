@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Snoozle.Abstractions;
+using Snoozle.InMemory.Configuration;
 using Snoozle.InMemory.Implementation;
 using System;
 using System.Collections.Generic;
@@ -11,15 +13,38 @@ namespace Snoozle.InMemory
 {
     public static class ServiceCollectionExtensions
     {
-        public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this)
+        public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this, IConfigurationSection configurationSection)
         {
             IServiceCollection serviceCollection = @this.Services;
             IInMemoryRuntimeConfigurationProvider runtimeConfigurationProvider = BuildRuntimeConfigurationProvider();
 
-            serviceCollection.AddScoped<IDataProvider, InMemoryDataProvider>();
-            serviceCollection.AddSingleton(runtimeConfigurationProvider);
+            serviceCollection.Configure<InMemorySnoozleOptions>(options => configurationSection.Bind(options));
 
-            @this.AddSnoozleCore(runtimeConfigurationProvider);
+            AddSnoozleInMemory(serviceCollection, runtimeConfigurationProvider);
+
+            @this.AddSnoozleCore(runtimeConfigurationProvider, configurationSection);
+
+            return @this;
+        }
+
+        public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this, Action<InMemorySnoozleOptions> optionsBuilder)
+        {
+            IServiceCollection serviceCollection = @this.Services;
+            IInMemoryRuntimeConfigurationProvider runtimeConfigurationProvider = BuildRuntimeConfigurationProvider();
+
+            serviceCollection.Configure(optionsBuilder);
+
+            AddSnoozleInMemory(serviceCollection, runtimeConfigurationProvider);
+
+            @this.AddSnoozleCore(runtimeConfigurationProvider, optionsBuilder);
+
+            return @this;
+        }
+
+        public static IServiceCollection AddSnoozleInMemory(this IServiceCollection @this, IInMemoryRuntimeConfigurationProvider runtimeConfigurationProvider)
+        {
+            @this.AddScoped<IDataProvider, InMemoryDataProvider>();
+            @this.AddSingleton(runtimeConfigurationProvider);
 
             return @this;
         }

@@ -16,7 +16,46 @@ namespace Snoozle
         /// Adds the core Snoozle functionality and configuration to the application. This should only be called from the data providers <see cref="IMvcBuilder"/> extensions,
         /// and not directly from the web application.
         /// </summary>
-        public static IMvcBuilder AddSnoozleCore<TRuntimeConfiguration>(this IMvcBuilder @this, IRuntimeConfigurationProvider<TRuntimeConfiguration> runtimeConfigurationProvider)
+        public static IMvcBuilder AddSnoozleCore<TRuntimeConfiguration, TOptions>(
+            this IMvcBuilder @this,
+            IRuntimeConfigurationProvider<TRuntimeConfiguration> runtimeConfigurationProvider,
+            Action<TOptions> optionsBuilder)
+            where TRuntimeConfiguration : class, IRuntimeConfiguration
+            where TOptions : SnoozleOptions
+        {
+            IServiceCollection serviceCollection = @this.Services;
+            AddSnoozleCore(@this, runtimeConfigurationProvider);
+
+            serviceCollection.Configure(optionsBuilder);
+
+            return @this;
+        }
+
+        /// <summary>
+        /// Adds the core Snoozle functionality and configuration to the application. This should only be called from the data providers <see cref="IMvcBuilder"/> extensions,
+        /// and not directly from the web application.
+        /// </summary>
+        public static IMvcBuilder AddSnoozleCore<TRuntimeConfiguration>(
+            this IMvcBuilder @this,
+            IRuntimeConfigurationProvider<TRuntimeConfiguration> runtimeConfigurationProvider,
+            IConfigurationSection configOptions)
+            where TRuntimeConfiguration : class, IRuntimeConfiguration
+        {
+            IServiceCollection serviceCollection = @this.Services;
+            AddSnoozleCore(@this, runtimeConfigurationProvider);
+
+            serviceCollection.Configure<SnoozleOptions>(options => configOptions.Bind(options));
+
+            return @this;
+        }
+
+        /// <summary>
+        /// Adds the core Snoozle functionality and configuration to the application. This should only be called from the data providers <see cref="IMvcBuilder"/> extensions,
+        /// and not directly from the web application.
+        /// </summary>
+        private static IMvcBuilder AddSnoozleCore<TRuntimeConfiguration>(
+            this IMvcBuilder @this,
+            IRuntimeConfigurationProvider<TRuntimeConfiguration> runtimeConfigurationProvider)
             where TRuntimeConfiguration : class, IRuntimeConfiguration
         {
             IServiceCollection serviceCollection = @this.Services;
@@ -49,32 +88,6 @@ namespace Snoozle
 
             // Create closed generic controller TypeInfo for each resource defined
             return restResources.Select(resource => typeof(RestResourceController<>).MakeGenericType(resource).GetTypeInfo());
-        }
-
-        /// <summary>
-        /// Add Snoozle to the application.
-        /// </summary>
-        /// <param name="this">The <see cref="IServiceCollection"/> instance.</param>
-        /// <param name="optionsBuilder">An action to apply to the <see cref="SnoozleOptions"/> builder.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-        public static IServiceCollection AddSnoozle(this IServiceCollection @this, Action<SnoozleOptions> optionsBuilder)
-        {
-            @this.Configure(optionsBuilder);
-
-            return @this;
-        }
-
-        /// <summary>
-        /// Add Snoozle to the application.
-        /// </summary>
-        /// <param name="this">The <see cref="IServiceCollection"/> instance.</param>
-        /// <param name="configurationSection">The <see cref="IConfigurationSection"/> instance that defines the <see cref="SnoozleOptions"/> values.</param>
-        /// <returns>The <see cref="IServiceCollection"/> instance.</returns>
-        public static IServiceCollection AddSnoozle(this IServiceCollection @this, IConfigurationSection configurationSection)
-        {
-            @this.Configure<SnoozleOptions>(options => configurationSection.Bind(options));
-
-            return @this;
         }
     }
 }
