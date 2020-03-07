@@ -4,6 +4,21 @@ repo_name: GitHub
 site_description: Documentation for Snoozle
 site_author: Charlie Kendall
 copyright: Copyright (c) Charlie Kendall 2020
+markdown_extensions:
+  - admonition
 nav:
-    - Home: index.md
+    - Introduction: index.md
+    - Getting Started: getting-started.md
+    - Configuring Snoozle:
+        - Global Configuration: global-configuration.md
+        - Model Configuration: model-configuration.md
+        - Property Configuration: property-configuration.md
+    - Walkthroughs:
+        - An Entirely Model-Based REST API: walkthough-model-based-api.md
+    - Types of Data Provider: data-providers.md
+    - Data Provider: SQL Server
+        - Getting Started: getting-started-sql.md
+        - Global Configuration: global-configuration-sql.md
+        - Model Configuration: model-configuration-sql.md
+        - Property Configuration: property-configuration-sql.md
 theme: readthedocs
