@@ -1,12 +1,6 @@
 # Snoozle
 
-The Snoozle framework removes the need for boilerplate code whilst providing fully-fledged REST APIs via simple model-based resource definitions. Behind the scenes, Snoozle uses the .NET expression tree API to dynamically write and compile highly optimised code based on your simple model definitions.
-
-!!! info "Supported .NET Versions"
-    - .NET Core 2.1
-    - .NET Core 2.2
-    - .NET Core 3.0
-    - .NET Core 3.1
+Snoozle removes the need for boilerplate code whilst providing fully-fledged REST APIs via simple model-based resource definitions. Behind the scenes, Snoozle uses the .NET expression tree API to dynamically write and compile highly optimised code based on your simple model definitions.
 
 Snoozle aims to make the creation of fully customisable REST APIs accessible to software developers of all levels. Example use cases for Snoozle REST APIs are:
 
@@ -17,11 +11,12 @@ Snoozle aims to make the creation of fully customisable REST APIs accessible to 
 
 # Example
 
-Setup and configuration of a Snoozle REST API is simple.
+Setup and configuration of a Snoozle REST API is simple. All that is required is a resource model definition and a configuration class for each resource you want to expose via HTTP.
 
-1. Define your data model, and implement the `IRestResource` marker interface
+### Resource model
 
 ``` cs
+// Inherit from the IRestResource interface to mark the class as a resource model
 public class Cat : IRestResource
 {
     public int? Id { get; set; }
@@ -32,16 +27,25 @@ public class Cat : IRestResource
 }
 ```
 
-2. Create your resource configuration class that inherits from the abstract configuration builder
+### Resource configuration
 
 ``` cs
 public class CatResourceConfiguration : SqlResourceConfigurationBuilder<Cat>
 {
     public override void Configure()
     {
+        // Define custom configurations for properties
         ConfigurationForProperty(x => x.HairLength).HasColumnName("HairLengthInMeters");
         ConfigurationForProperty(x => x.Id).HasColumnName("CatId").IsPrimaryIdentifier();
     }
 }
 
 ```
+
+# Supported .NET Versions
+
+Currently Snoozle is supported for the following versions:
+- .NET Core 2.1
+- .NET Core 2.2
+- .NET Core 3.0
+- .NET Core 3.1
