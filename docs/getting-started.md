@@ -29,17 +29,9 @@ You should now have a bare-bones .NET Core 3.0 API web application- you can run 
 
 Install Snoozle via the NuGet package manager console. This can be found via the top navigation menu Tools > NuGet Package Manager > Package Manager Console.
 
-Run the following command to install the latest version:
+Install the latest version of Snoozle using the Package Manager Console by running `Install-Package Snoozle`. Once this has succeeded, add a using directive for Snoozle.InMemory to the Startup.cs file `using Snoozle.InMemory;`.
 
-`Install-Package Snoozle`
-
-Once this has succeeded, add a using directive for Snoozle.InMemory to the Startup.cs file:
-
-`using Snoozle.InMemory;`
-
-Then call the `.AddSnoozleInMemory()` extension method from any method returning an `IMvcBuilder` object, for example:
-
-`servivces.AddControllers().AddSnoozleInMemory();`
+This will enable you to call the `.AddSnoozleInMemory()` extension method from any method returning an `IMvcBuilder` object, for example `servivces.AddControllers().AddSnoozleInMemory();`.
 
 ### Create a resource model
 
@@ -80,11 +72,7 @@ public class CatResourceConfiguration : InMemoryResourceConfigurationBuilder<Cat
 
 We're now ready to run the application and see it in action. Run the web application, and then form a POST request to the following endpoint with the `Content-Type: application/json` header.
 
-`<base_url>/api/cats`
-
-For example `https://localhost:44358/api/cats`
-
-JSON body:
+Endpoint: `<base_url>/api/cats`, for example `https://localhost:44358/api/cats` with the following request body:
 
 ``` json
 {
