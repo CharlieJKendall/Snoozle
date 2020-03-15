@@ -135,20 +135,18 @@ namespace Snoozle.Abstractions
         protected virtual void SetConventionsForProperties()
         {
             var resourceIdName = typeof(TResource).Name.ToLowerInvariant() + "id";
-            var resourceIdPropertyConfig = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == resourceIdName).Value;
-            var idPropertyConfig = _propertyConfigurations.FirstOrDefault(prop => prop.Key.ToLower() == "id").Value;
+            var resourceIdPropertyConfig = PropertyConfigurations.FirstOrDefault(prop => prop.PropertyName.ToLower() == resourceIdName);
+            var idPropertyConfig = PropertyConfigurations.FirstOrDefault(prop => prop.PropertyName.ToLower() == "id");
 
             if (idPropertyConfig != null)
             {
                 // Set column called Id to primary identifier
-                idPropertyConfig.IsPrimaryResourceIdentifier = true;
-                idPropertyConfig.IsReadOnly = true;
+                CreatePropertyConfigurationBuilder<TResource>(idPropertyConfig).IsPrimaryIdentifier();
             }
             else if (resourceIdPropertyConfig != null)
             {
                 // Set column called [resource_type_name]Id to primary identifier (i.e. Person -> PersonId)
-                resourceIdPropertyConfig.IsPrimaryResourceIdentifier = true;
-                resourceIdPropertyConfig.IsReadOnly = true;
+                CreatePropertyConfigurationBuilder<TResource>(resourceIdPropertyConfig).IsPrimaryIdentifier();
             }
         }
 

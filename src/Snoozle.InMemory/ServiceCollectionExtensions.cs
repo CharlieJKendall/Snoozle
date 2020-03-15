@@ -13,6 +13,18 @@ namespace Snoozle.InMemory
 {
     public static class ServiceCollectionExtensions
     {
+        /// <summary>
+        /// Add Snoozle with an in-memory data provider to your application. Default configuration values are taken.
+        /// </summary>
+        public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this)
+        {
+            return AddSnoozleInMemory(@this, options => { });
+        }
+
+        /// <summary>
+        /// Add Snoozle with an in-memory data provider to your application.
+        /// </summary>
+        /// <param name="configurationSection">A configuration section representing the <see cref="InMemorySnoozleOptions"/>.</param>
         public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this, IConfigurationSection configurationSection)
         {
             IServiceCollection serviceCollection = @this.Services;
@@ -27,6 +39,10 @@ namespace Snoozle.InMemory
             return @this;
         }
 
+        /// <summary>
+        /// Add Snoozle with an in-memory data provider to your application.
+        /// </summary>
+        /// <param name="optionsBuilder">A builder used to setup the <see cref="InMemorySnoozleOptions"/>.</param>
         public static IMvcBuilder AddSnoozleInMemory(this IMvcBuilder @this, Action<InMemorySnoozleOptions> optionsBuilder)
         {
             IServiceCollection serviceCollection = @this.Services;
@@ -41,7 +57,7 @@ namespace Snoozle.InMemory
             return @this;
         }
 
-        public static IServiceCollection AddSnoozleInMemory(this IServiceCollection @this, IInMemoryRuntimeConfigurationProvider runtimeConfigurationProvider)
+        private static IServiceCollection AddSnoozleInMemory(this IServiceCollection @this, IInMemoryRuntimeConfigurationProvider runtimeConfigurationProvider)
         {
             @this.AddScoped<IDataProvider, InMemoryDataProvider>();
             @this.AddSingleton(runtimeConfigurationProvider);
@@ -63,14 +79,24 @@ namespace Snoozle.InMemory
                 // Read any initial data from the JSON file specified if possible
                 if (configuration.ModelConfiguration.JsonFilePath != null)
                 {
-                    string json = File.ReadAllText(configuration.ModelConfiguration.JsonFilePath);
-                    Type genericListType = typeof(List<>).MakeGenericType(configuration.ResourceType);
-                    MethodInfo genericMethod = typeof(JsonConvert)
-                        .GetMethod(nameof(JsonConvert.DeserializeObject), 1, new Type[] { typeof(string) })
-                        .MakeGenericMethod(genericListType);
+                    try
+                    {
+                        string json = File.ReadAllText(configuration.ModelConfiguration.JsonFilePath);
+                        Type genericListType = typeof(List<>).MakeGenericType(configuration.ResourceType);
+                        MethodInfo genericMethod = typeof(JsonConvert)
+                            .GetMethod(nameof(JsonConvert.DeserializeObject), 1, new Type[] { typeof(string) })
+                            .MakeGenericMethod(genericListType);
 
-                    // Create the generic list of resource objects
-                    resourceList = genericMethod.Invoke(null, new object[] { json });
+                        // Create the generic list of resource objects
+                        resourceList = genericMethod.Invoke(null, new object[] { json });
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidDataException(
+                            $"An error occurred while reading the initial JSON data for {configuration.ResourceType.Name} ({configuration.ModelConfiguration.JsonFilePath}). " +
+                            $"Ensure that it is well formed and the correct property types are used. See inner exception for details.",
+                            ex);
+                    }
                 }
 
                 var runtimeConfiguration = Activator.CreateInstance(

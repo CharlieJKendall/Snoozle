@@ -116,7 +116,7 @@ namespace Snoozle.Core
                 return MethodNotAllowed();
             }
 
-            if (resourceToUpdate == null || _runtimeConfiguration.GetPrimaryKeyValue(resourceToUpdate).ToString() != id)
+            if (resourceToUpdate == null || _runtimeConfiguration.GetPrimaryKeyValue(resourceToUpdate)?.ToString() != id)
             {
                 return BadRequest();
             }

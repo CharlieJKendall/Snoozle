@@ -44,7 +44,6 @@ public class CatResourceConfiguration : SqlResourceConfigurationBuilder<Cat>
 
 # Supported .NET Versions
 
-Currently Snoozle is supported for the following versions:
 - .NET Core 2.1
 - .NET Core 2.2
 - .NET Core 3.0

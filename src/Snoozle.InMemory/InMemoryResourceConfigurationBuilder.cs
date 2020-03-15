@@ -1,6 +1,7 @@
 ﻿using Snoozle.Abstractions;
 using Snoozle.Exceptions;
 using Snoozle.InMemory.Implementation;
+using System;
 using System.Linq;
 
 namespace Snoozle.InMemory
@@ -34,6 +35,30 @@ namespace Snoozle.InMemory
             return new InMemoryModelConfigurationBuilder(ModelConfiguration);
         }
 
+        protected override void SetConventionsForProperties()
+        {
+            base.SetConventionsForProperties();
+
+            var primaryKey = PropertyConfigurations.FirstOrDefault(x => x.IsPrimaryResourceIdentifier);
+
+            if (primaryKey?.PropertyType == typeof(int))
+            {
+                CreatePropertyConfigurationBuilder<int>(primaryKey).HasComputedValue(HttpVerbs.POST).AutoIncrementingInteger();
+            }
+            else if (primaryKey?.PropertyType == typeof(Guid))
+            {
+                CreatePropertyConfigurationBuilder<Guid>(primaryKey).HasComputedValue(HttpVerbs.POST).RandomlyGeneratedGuid();
+            }
+            else if (primaryKey?.PropertyType == typeof(int?))
+            {
+                CreatePropertyConfigurationBuilder<int?>(primaryKey).HasComputedValue(HttpVerbs.POST).AutoIncrementingInteger();
+            }
+            else if (primaryKey?.PropertyType == typeof(Guid?))
+            {
+                CreatePropertyConfigurationBuilder<Guid?>(primaryKey).HasComputedValue(HttpVerbs.POST).RandomlyGeneratedGuid();
+            }
+        }
+
         protected override void SetPropertyConfigurationDefaults()
         {
             base.SetPropertyConfigurationDefaults();
@@ -45,7 +70,7 @@ namespace Snoozle.InMemory
 
             ExceptionHelper.InvalidOperation.ThrowIfTrue(
                 PropertyConfigurations.Single(prop => prop.IsPrimaryResourceIdentifier).ValueComputationFunc == null,
-                $"The primary identifier for {typeof(TResource).Name} must have a unique value computation function defined for it (e.g. () => Guid.NewGuid()).");
+                $"The primary identifier for {typeof(TResource).Name} must have a unique value computation function defined for it (e.g. () => Guid.NewGuid())");
         }
     }
 }
