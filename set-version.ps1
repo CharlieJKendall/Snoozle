@@ -13,6 +13,9 @@ if(-not $Env:BUILD_BUILDID)
 $MajorMinorFromBranch = $Env:BUILD_SOURCEBRANCHNAME
 Write-Host "Major.Minor found from branch name: $MajorMinorFromBranch"
 
+Write-Host "Fetching Git tags"
+git fetch --tags
+
 $MostRecentVersion = git describe --tags --abbrev=0
 Write-Host "Most recent version from git describe: $MostRecentVersion"
 
