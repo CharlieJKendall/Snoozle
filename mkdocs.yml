@@ -17,7 +17,6 @@ nav:
         - An Entirely Model-Based REST API: walkthough-model-based-api.md
     - Types of Data Provider: data-providers.md
     - Data Provider - SQL Server:
-        - Getting Started: getting-started-sql.md
         - Global Configuration: global-configuration-sql.md
         - Model Configuration: model-configuration-sql.md
         - Property Configuration: property-configuration-sql.md

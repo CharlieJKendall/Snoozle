@@ -1,3 +1,3 @@
-# Snoozle
+#### ConnectionString
 
-!!! warning "Docs under construction - please bear with us"
+The connection string to use to connect to the SQL Server instance your data is stored in.
